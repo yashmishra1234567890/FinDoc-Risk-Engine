@@ -1,10 +1,12 @@
-from langchain_huggingface import HuggingFaceEmbeddings
+import os
+from langchain_openai import OpenAIEmbeddings
 
 
 def get_embedding_model():
     """
-    Local embedding model (free & fast).
+    Uses OpenAI Embeddings (API-based) to save RAM on the server.
     """
-    return HuggingFaceEmbeddings(
-        model_name="sentence-transformers/all-MiniLM-L6-v2"
+    return OpenAIEmbeddings(
+        model="text-embedding-3-small",
+        api_key=os.getenv("OPENAI_API_KEY")
     )
