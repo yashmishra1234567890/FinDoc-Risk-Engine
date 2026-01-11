@@ -1,0 +1,34 @@
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+env/
+venv/
+.env
+.DS_Store
+.vscode/
+
+# Data Files (Keep structure, ignore content)
+data/financial_docs/*
+!data/financial_docs/.gitkeep
+
+data/queries/*
+!data/queries/.gitkeep
+
+data/regulations/*
+!data/regulations/.gitkeep
+
+data/samples/*
+!data/samples/.gitkeep
+
+# Vector Store (Local artifacts)
+vectorstore/faiss_index/*
+!vectorstore/faiss_index/.gitkeep
+
+# Generated Reports
+reports/*
+!reports/.gitkeep
+
+# Logs
+*.log
