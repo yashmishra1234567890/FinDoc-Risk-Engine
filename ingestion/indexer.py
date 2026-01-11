@@ -3,9 +3,8 @@ from langchain_core.documents import Document
 
 
 
-def build_faiss_index(chunks, embedder):
+def create_documents_from_chunks(chunks):
     docs = []
-
     for chunk in chunks:
         docs.append(
             Document(
@@ -16,5 +15,8 @@ def build_faiss_index(chunks, embedder):
                 }
             )
         )
+    return docs
 
+def build_faiss_index(chunks, embedder):
+    docs = create_documents_from_chunks(chunks)
     return FAISS.from_documents(docs, embedder)

@@ -3,9 +3,9 @@ from fastapi import APIRouter, UploadFile, File
 
 from ingestion.loader import load_pdf
 from ingestion.chunking import chunk_financial_pages
-from ingestion.embeddings import get_embedding_model
-from ingestion.indexer import build_faiss_index
+from ingestion.indexer import create_documents_from_chunks
 from app.api.core.config import DATA_DIR, VECTORSTORE_PATH
+from app.api.core.store import vectorstore
 
 router = APIRouter(tags=["Ingestion"])
 
@@ -22,8 +22,11 @@ async def upload_document(file: UploadFile = File(...)):
     pages = load_pdf(file_path)
     chunks = chunk_financial_pages(pages)
 
-    embedder = get_embedding_model()
-    vectorstore = build_faiss_index(chunks, embedder)
+    # Create documents and add to the running global vectorstore
+    documents = create_documents_from_chunks(chunks)
+    
+    # This updates the in-memory index used by query.py
+    vectorstore.add_documents(documents)
 
     os.makedirs("vectorstore", exist_ok=True)
     vectorstore.save_local(VECTORSTORE_PATH)
