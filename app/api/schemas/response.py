@@ -9,4 +9,6 @@ class QueryResponse(BaseModel):
     answer: str
     confidence: Optional[float] = None
     sources: List[Source] = []
+    metrics: Optional[dict] = {}
+    ratios: Optional[dict] = {}
 
