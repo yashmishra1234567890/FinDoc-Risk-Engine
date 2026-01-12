@@ -12,26 +12,42 @@ from utils.finance_utils import parse_financial_value, calculate_ratio
 
 def extract_metric(text: str, keywords: list) -> float:
     """
-    Scans the text for lines containing any of the provided keywords and extracts the last numerical value.
-    
-    Args:
-        text (str): The text content from financial documents (tables/paragraphs).
-        keywords (list): A list of strings to search for (e.g., ["total debt", "borrowings"]).
-        
-    Returns:
-        float: The extracted value if found, otherwise None.
+    Scans the text for lines containing any of the provided keywords.
+    Prioritizes large numbers (likely currency) over small numbers (percentages like 100.0).
     """
     lines = text.split('\n')
+    best_val = None
+    
     for line in lines:
         lower_line = line.lower()
         if any(k in lower_line for k in keywords):
             # Regex to find numbers like 1,000.00 or 500
             matches = re.findall(r"-?\d{1,3}(?:,\d{2,3})*(?:\.\d+)?", line)
             if matches:
-                # We assume the last number in the row is the column value we want
-                val_str = matches[-1]
-                return parse_financial_value(val_str)
-    return None
+                 # Filter out clearly non-financial years (e.g. 2024, 2025) if they stand alone, 
+                 # but honestly, standard financial tables put values at the end.
+                 
+                 # Strategy: Look for the largest value in the line that isn't a percentage.
+                 # Usually, Revenue columns are absolute numbers (millions/crores).
+                 
+                 vals = []
+                 for m in matches:
+                     try:
+                        v = parse_financial_value(m)
+                        vals.append(v)
+                     except:
+                        pass
+                 
+                 if vals:
+                    # Heuristic: If we are looking for Revenue/Debt, we usually want the big Number, not "100.0" (%) or "1" (Note 1)
+                    # Exclude values that look like percentages (0-100) IF there is a much larger number available
+                    large_vals = [v for v in vals if v > 1000]
+                    if large_vals:
+                         best_val = large_vals[-1] # Usually most recent year is last column
+                    else:
+                         best_val = vals[-1] # Fallback to last number found
+
+    return best_val
 
 def analyze_financials(retrieved_chunks: list, user_query: str) -> dict:
     """
