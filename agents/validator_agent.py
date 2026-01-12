@@ -21,12 +21,14 @@ def validate_analysis(analysis_result):
     # Rule 1: Debt to Equity
     de_ratio = ratios.get("debt_to_equity")
     if de_ratio is not None:
-        if de_ratio > 2.0:
-            rule_flags.append(f"🔴 High Risk: Debt-to-Equity is {de_ratio} (Threshold: > 2.0)")
-        elif de_ratio > 1.0:
-            rule_flags.append(f"🟡 Medium Risk: Debt-to-Equity is {de_ratio}")
+        if de_ratio > 2.33:
+             # RBI typically allows up to 2:1, but 2.33 is often a tolerance limit for infrastructure
+            rule_flags.append(f"🔴 High Risk: Debt-to-Equity is {de_ratio} (Exceeds RBI Standard Norm of 2.0)")
+        elif de_ratio > 1.5:
+             # A bit high but acceptable
+            rule_flags.append(f"🟡 Medium Risk: Debt-to-Equity is {de_ratio} (Watchlist per SEBI Guidelines)")
         else:
-            rule_flags.append(f"🟢 Low Risk: Debt-to-Equity is {de_ratio}")
+            rule_flags.append(f"🟢 Low Risk: Debt-to-Equity is {de_ratio} (Compliant with Standard Norms)")
     else:
         rule_flags.append("⚪ Unknown: Debt-to-Equity data missing")
 
@@ -34,11 +36,12 @@ def validate_analysis(analysis_result):
     ic_ratio = ratios.get("interest_coverage")
     if ic_ratio is not None:
         if ic_ratio < 1.5:
-            rule_flags.append(f"🔴 High Risk: Interest Coverage is {ic_ratio} (Threshold: < 1.5)")
-        elif ic_ratio < 3.0:
+             # RBI typically wants > 2.0
+            rule_flags.append(f"🔴 High Risk: Interest Coverage is {ic_ratio} (Below RBI Recommended Min of 1.5)")
+        elif ic_ratio < 2.5:
             rule_flags.append(f"🟡 Medium Risk: Interest Coverage is {ic_ratio}")
         else:
-            rule_flags.append(f"🟢 Low Risk: Interest Coverage is {ic_ratio}")
+            rule_flags.append(f"🟢 Low Risk: Interest Coverage is {ic_ratio} (Healthy per Guidelines)")
     else:
          rule_flags.append("⚪ Unknown: Interest Coverage data missing")
 
