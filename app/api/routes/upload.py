@@ -45,12 +45,20 @@ def process_file_background(file_path: str):
 @router.post("/upload")
 async def upload_document(background_tasks: BackgroundTasks, file: UploadFile = File(...)):
     try:
+        logger.info(f"Receiving file upload: {file.filename}")
         os.makedirs(DATA_DIR, exist_ok=True)
         file_path = os.path.join(DATA_DIR, file.filename)
 
+        # Stream write to avoid loading entire file into RAM (helps with low-memory environments like Render)
         with open(file_path, "wb") as f:
-            f.write(await file.read())
+            while True:
+                chunk = await file.read(1024 * 1024) # Read 1MB at a time
+                if not chunk:
+                    break
+                f.write(chunk)
         
+        logger.info(f"File saved to disk: {file_path}. Queuing background processing.")
+
         # Offload processing to background
         background_tasks.add_task(process_file_background, file_path)
 
