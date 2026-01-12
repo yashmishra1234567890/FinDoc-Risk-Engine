@@ -22,11 +22,26 @@ Question:
 Return as bullet points.
 """
 
-    response = client.chat.completions.create(
-        model="mistralai/mistral-7b-instruct",
-        messages=[{"role": "user", "content": prompt}],
-        temperature=0.2
-    )
+    try:
+        response = client.chat.completions.create(
+            model="mistralai/mistral-7b-instruct",
+            messages=[{"role": "user", "content": prompt}],
+            temperature=0.2
+        )
+        
+        content = response.choices[0].message.content
+        sub_questions = [line.strip("- ").strip() for line in content.split("\n") if line.strip().startswith("-")]
+
+        # Fallback: If no bullet points found, or empty, use original query
+        if not sub_questions:
+             return [user_query]
+             
+        return sub_questions
+
+    except Exception as e:
+        print(f"Decomposer Error: {e}")
+        # Critical Fallback: Ensure we never return empty list, or the retriever will do nothing
+        return [user_query]
 
     lines = response.choices[0].message.content.split("\n")
     sub_questions = [
