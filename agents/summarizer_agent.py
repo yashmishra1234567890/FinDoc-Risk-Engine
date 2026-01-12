@@ -10,24 +10,29 @@ def get_client():
 
 def summarize_report(user_query, analysis_result, compliance_result):
     client = get_client()
+    
+    # Format metrics for the LLM to easily read
+    metrics_str = "\n".join([f"{k}: {v}" for k, v in analysis_result.get("extracted_metrics", {}).items() if v is not None])
+    
     prompt = f"""
-You are a reliable financial assistant.
+You are a helpful financial assistant.
 
-User Question:
-"{user_query}"
+User's Question: "{user_query}"
 
-Quantitative Analysis:
-{analysis_result["extracted_metrics"]}
+FOUND DATA (Use this to answer):
+{metrics_str}
 
-Compliance/Risk Flags:
+Risk Report (Context):
 {compliance_result}
 
 INSTRUCTIONS:
-1. FIRST, directly answer the User's Question using the data provided.
-2. If the answer is "None" or missing in the analysis, state that found data segments but the specific number was unclear.
-3. THEN, provide the risk assessment summary.
+1. Answer the User's Question DIRECTLY using the "FOUND DATA". 
+   - Example: "The Revenue is 626,130."
+   - If the specific number is in FOUND DATA, you MUST state it.
+2. Only AFTER answering, mention any missing risk data (like Debt/Equity) as a secondary note.
+3. If the answer is not in FOUND DATA, say "I found financial data, but not the specific metric you asked for."
 
-Do not hallucinate numbers not present in the Analysis.
+Keep it professional and concise.
 """
 
     response = client.chat.completions.create(
