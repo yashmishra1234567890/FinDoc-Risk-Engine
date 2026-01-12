@@ -14,32 +14,42 @@ logger = logging.getLogger(__name__)
 def process_file_background(file_path: str):
     """
     Heavy lifting task that runs in the background.
+    Optimized for low memory usage (batch processing).
     """
     try:
         logger.info(f"Starting background processing for: {file_path}")
         
-        # 1. Load and Chunk
-        pages = load_pdf(file_path)
-        logger.info(f"Loaded {len(pages)} pages from {file_path}")
+        # 1. Load Generator (Lazy loading)
+        pages_generator = load_pdf(file_path)
         
-        chunks = chunk_financial_pages(pages)
-        logger.info(f"Created {len(chunks)} chunks from {file_path}")
-
-        # 2. Create Documents
-        documents = create_documents_from_chunks(chunks)
+        # 2. Process in Batches of 50 pages to save RAM
+        BATCH_SIZE = 50
+        batch_pages = []
         
-        # 3. Add to Vector Store (Calls OpenAI Embeddings)
-        # We assume vectorstore is thread-safe for simple adds or we accept slight race conditions impacting only concurrent uploads
-        vectorstore.add_documents(documents)
-        logger.info(f"Added {len(documents)} documents to vectorstore")
+        for page in pages_generator:
+            batch_pages.append(page)
+            if len(batch_pages) >= BATCH_SIZE:
+                 _process_batch(batch_pages)
+                 batch_pages = [] # Clear memory
+        
+        # Process remaining
+        if batch_pages:
+             _process_batch(batch_pages)
 
-        # 4. Save to Disk (Optional backup)
+        # 4. Save to Disk (Once at the end)
         os.makedirs("vectorstore", exist_ok=True)
         vectorstore.save_local(VECTORSTORE_PATH)
         logger.info("Vectorstore saved successfully")
 
     except Exception as e:
         logger.error(f"Error processing {file_path}: {str(e)}")
+
+def _process_batch(pages):
+    chunks = chunk_financial_pages(pages)
+    documents = create_documents_from_chunks(chunks)
+    vectorstore.add_documents(documents)
+    logger.info(f"Processed batch of {len(pages)} pages.")
+
 
 
 @router.post("/upload")
