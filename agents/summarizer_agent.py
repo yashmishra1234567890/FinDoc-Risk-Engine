@@ -11,17 +11,23 @@ def get_client():
 def summarize_report(user_query, analysis_result, compliance_result):
     client = get_client()
     prompt = f"""
+You are a reliable financial assistant.
+
 User Question:
-{user_query}
+"{user_query}"
 
-Analysis:
-{analysis_result}
+Quantitative Analysis:
+{analysis_result["extracted_metrics"]}
 
-Compliance Check:
+Compliance/Risk Flags:
 {compliance_result}
 
-Write a concise summary (5–6 lines)
-for a bank or CA.
+INSTRUCTIONS:
+1. FIRST, directly answer the User's Question using the data provided.
+2. If the answer is "None" or missing in the analysis, state that found data segments but the specific number was unclear.
+3. THEN, provide the risk assessment summary.
+
+Do not hallucinate numbers not present in the Analysis.
 """
 
     response = client.chat.completions.create(

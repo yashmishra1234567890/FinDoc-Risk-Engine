@@ -48,20 +48,31 @@ def analyze_financials(retrieved_chunks: list, user_query: str) -> dict:
         chunk["content"] for chunk in retrieved_chunks
     )
 
-    # 1. Extract Key Metrics
+    # 1. Extract Key Metrics (STANDARD RISK METRICS)
     metrics = {
         "total_debt": extract_metric(combined_text, ["total debt", "total borrowings", "long term borrowings"]),
         "total_equity": extract_metric(combined_text, ["total equity", "shareholder's equity", "net worth"]),
         "current_liabilities": extract_metric(combined_text, ["current liabilities", "short term borrowings"]),
         "non_current_liabilities": extract_metric(combined_text, ["non-current liabilities", "long term liabilities"]),
         "EBITDA": extract_metric(combined_text, ["ebitda", "operating profit", "profit before tax"]),
-        "interest_expense": extract_metric(combined_text, ["finance costs", "interest expense"])
+        "interest_expense": extract_metric(combined_text, ["finance costs", "interest expense"]),
     }
+    
+    # 2. Extract DYNAMIC Metrics based on User Query
+    user_query_lower = user_query.lower()
+    if "revenue" in user_query_lower or "sales" in user_query_lower:
+        metrics["revenue"] = extract_metric(combined_text, ["revenue from operations", "total revenue", "revenue"])
+    
+    if "profit" in user_query_lower or "net income" in user_query_lower:
+        metrics["net_profit"] = extract_metric(combined_text, ["net profit", "profit for the period", "net income"])
+        
+    if "cash flow" in user_query_lower:
+        metrics["cash_flow"] = extract_metric(combined_text, ["cash flow from operating", "net cash from operating"])
 
-    # 2. Derive Ratios (Python Math - Deterministic)
+    # 3. Derive Ratios (Python Math - Deterministic)
     ratios = {
-        "debt_to_equity": calculate_ratio(metrics["total_debt"], metrics["total_equity"]),
-        "interest_coverage": calculate_ratio(metrics["EBITDA"], metrics["interest_expense"])
+        "debt_to_equity": calculate_ratio(metrics.get("total_debt"), metrics.get("total_equity")),
+        "interest_coverage": calculate_ratio(metrics.get("EBITDA"), metrics.get("interest_expense"))
     }
 
     # 3. Identify Missing Data for Confidence Scoring
