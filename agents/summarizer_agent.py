@@ -15,24 +15,25 @@ def summarize_report(user_query, analysis_result, compliance_result):
     metrics_str = "\n".join([f"{k}: {v}" for k, v in analysis_result.get("extracted_metrics", {}).items() if v is not None])
     
     prompt = f"""
-You are a helpful financial assistant.
+You are a concise financial analyst provided with data from a PDF.
 
 User's Question: "{user_query}"
 
-FOUND DATA (Use this to answer):
+Data Found:
 {metrics_str}
 
-Risk Report (Context):
+Risk Analysis (Internal Use):
 {compliance_result}
 
 INSTRUCTIONS:
-1. Answer the User's Question DIRECTLY using the "FOUND DATA". 
-   - Example: "The Revenue is 626,130."
-   - If the specific number is in FOUND DATA, you MUST state it.
-2. Only AFTER answering, mention any missing risk data (like Debt/Equity) as a secondary note.
-3. If the answer is not in FOUND DATA, say "I found financial data, but not the specific metric you asked for."
+1. If the user asks for a specific metric (e.g., "What is Revenue?"), ONLY provide that answer.
+   - DO NOT mention missing debt, missing equity, or risk flags unless asked.
+   - Keep it short: "The Revenue is X."
+   
+2. If the user asks for "Summary", "Risk", or "Analysis", THEN provide the full Risk Assessment.
+   - Use the Risk Analysis provided above to answer these questions.
 
-Keep it professional and concise.
+3. Be direct. No filler words.
 """
 
     response = client.chat.completions.create(
