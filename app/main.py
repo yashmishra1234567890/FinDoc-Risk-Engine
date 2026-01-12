@@ -1,4 +1,12 @@
 from fastapi import FastAPI
+import logging
+
+# Configure logging to show INFO level logs in Render console
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s [%(levelname)s] %(name)s: %(message)s",
+    handlers=[logging.StreamHandler()]
+)
 
 from app.api.routes.health import router as health_router
 from app.api.routes.upload import router as upload_router
