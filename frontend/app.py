@@ -2,6 +2,7 @@ import streamlit as st
 import requests
 import json
 import time
+import os
 
 # --- Configuration ---
 # Use environment variable for backend URL to support both local and production seamlessly
