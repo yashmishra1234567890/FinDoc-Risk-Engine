@@ -4,8 +4,8 @@ import json
 import time
 
 # --- Configuration ---
-# API_BASE_URL = "http://127.0.0.1:8000"  # For local testing
-API_BASE_URL = "https://findoc-risk-engine.onrender.com" 
+# Use environment variable for backend URL to support both local and production seamlessly
+API_BASE_URL = os.getenv("BACKEND_URL", "https://findoc-risk-engine.onrender.com")
 
 st.set_page_config(
     page_title="FinDoc AI",
@@ -141,10 +141,15 @@ with tab_dashboard:
         with st.spinner("🤖 AI Agents working: Decomposing... Retrieving... Calculating..."):
             try:
                 payload = {"question": st.session_state.current_query}
-                response = requests.post(f"{API_BASE_URL}/query", json=payload)
+                # Increased timeout to 120s to allow for deep RAG analysis
+                response = requests.post(f"{API_BASE_URL}/query", json=payload, timeout=120)
                 if response.status_code == 200:
                     st.session_state.analysis_result = response.json()
                     del st.session_state.current_query # Clear trigger
+                else:
+                    st.error(f"Analysis Failed: {response.text}")
+            except requests.Timeout:
+                st.error("⚠️ logic timeout: The file is complex and the AI needed more time. Please try asking a simpler question.")
             except Exception as e:
                 st.error(f"Error: {e}")
 

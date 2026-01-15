@@ -16,8 +16,20 @@ def retrieve_node(state, vectorstore):
 
 def analysis_node(state):
     print("--- ANALYZE ---")
-    result = analyze_financials(state.retrieved_chunks, state.user_query)
-    return {"analysis_result": result}
+    try:
+        result = analyze_financials(state.retrieved_chunks, state.user_query)
+        return {"analysis_result": result}
+    except Exception as e:
+        print(f"Analysis Logic Failed: {e}")
+        # Graceful degradation
+        return {
+            "analysis_result": {
+                "extracted_metrics": {},
+                "derived_ratios": {},
+                "missing_metrics": ["error_during_analysis"],
+                "pages_used": []
+            }
+        }
 
 def validate_node(state):
     print("--- VALIDATE ---")
