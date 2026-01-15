@@ -26,5 +26,5 @@ def validate_node(state):
 
 def summarize_node(state):
     print("--- SUMMARIZE ---")
-    final = summarize_report(state.user_query, state.analysis_result, state.compliance_result)
+    final = summarize_report(state.user_query, state.analysis_result, state.compliance_result, state.retrieved_chunks)
     return {"final_answer": final}

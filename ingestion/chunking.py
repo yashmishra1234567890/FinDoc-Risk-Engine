@@ -1,8 +1,20 @@
 from typing import List, Dict
+from langchain_text_splitters import RecursiveCharacterTextSplitter
 
-
-def chunk_financial_pages(pages: List[Dict], max_chars: int = 800):
+def chunk_financial_pages(pages: List[Dict], chunk_size: int = 2000, chunk_overlap: int = 400):
+    """
+    Splits text using RecursiveCharacterTextSplitter to respect sentence/paragraph boundaries.
+    Increased chunk size and overlap to capture full context (Company names, Headers + Data tables).
+    """
     chunks = []
+    
+    # Configure the splitter
+    splitter = RecursiveCharacterTextSplitter(
+        chunk_size=chunk_size,
+        chunk_overlap=chunk_overlap,
+        separators=["\n\n", "\n", ".", " ", ""],
+        length_function=len,
+    )
 
     for page in pages:
         text = page["text"]
@@ -17,11 +29,13 @@ def chunk_financial_pages(pages: List[Dict], max_chars: int = 800):
                 )
                 text += f"\n\n[TABLE START]\n{table_str}\n[TABLE END]\n"
 
-        for i in range(0, len(text), max_chars):
-            chunk = text[i:i + max_chars].strip()
-            if chunk:
+        # Split text into smart chunks
+        page_chunks = splitter.split_text(text)
+        
+        for p_chunk in page_chunks:
+            if p_chunk.strip():
                 chunks.append({
-                    "content": chunk,
+                    "content": p_chunk.strip(),
                     "page_no": page["page_no"],
                     "has_table": len(page["tables"]) > 0
                 })
