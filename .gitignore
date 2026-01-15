@@ -12,6 +12,9 @@ venv/
 # Data Files (Keep structure, ignore content)
 data/financial_docs/*
 !data/financial_docs/.gitkeep
+!data/financial_docs/VIL-QR-Q1FY25.pdf
+!data/financial_docs/sa-fy23-annual-finstatement.pdf
+!data/financial_docs/Financial Performance Report.pdf
 
 data/queries/*
 !data/queries/.gitkeep
