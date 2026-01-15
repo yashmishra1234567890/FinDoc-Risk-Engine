@@ -1,9 +1,7 @@
 """
 Financial Analysis Agent
 ------------------------
-This module handles the extraction of specific financial metrics from text and calculates
-key financial ratios. It uses a combination of keyword search and regex to find values
-like Debt, Equity, and EBITDA.
+Extracts specific financial metrics (Debt, Revenue, etc.) via Regex and Python Logic.
 """
 
 import re
@@ -12,8 +10,8 @@ from utils.finance_utils import parse_financial_value, calculate_ratio
 
 def extract_metric(text: str, keywords: list) -> float:
     """
-    Scans the text for lines containing any of the provided keywords.
-    Prioritizes large numbers (likely currency) over small numbers (percentages like 100.0).
+    Finds numeric values associated with keywords using regex.
+    Prioritizes large currency figures (millions/crores) over small percentages.
     """
     lines = text.split('\n')
     best_val = None
@@ -23,13 +21,8 @@ def extract_metric(text: str, keywords: list) -> float:
         if any(k in lower_line for k in keywords):
             # Regex to find numbers like 1,000.00 or 500
             matches = re.findall(r"-?\d{1,3}(?:,\d{2,3})*(?:\.\d+)?", line)
+            
             if matches:
-                 # Filter out clearly non-financial years (e.g. 2024, 2025) if they stand alone, 
-                 # but honestly, standard financial tables put values at the end.
-                 
-                 # Strategy: Look for the largest value in the line that isn't a percentage.
-                 # Usually, Revenue columns are absolute numbers (millions/crores).
-                 
                  vals = []
                  for m in matches:
                      try:
@@ -39,32 +32,22 @@ def extract_metric(text: str, keywords: list) -> float:
                         pass
                  
                  if vals:
-                    # Heuristic: If we are looking for Revenue/Debt, we usually want the big Number, not "100.0" (%) or "1" (Note 1)
-                    # Exclude values that look like percentages (0-100) IF there is a much larger number available
+                    # Heuristic: Prefer large absolute numbers (Currency) over small ones (Ratios/Notes/%)
                     large_vals = [v for v in vals if v > 1000]
                     if large_vals:
                          best_val = large_vals[-1] # Usually most recent year is last column
                     else:
-                         best_val = vals[-1] # Fallback to last number found
+                         best_val = vals[-1] # Fallback
 
     return best_val
 
 def analyze_financials(retrieved_chunks: list, user_query: str) -> dict:
     """
-    Orchestrates the analysis by extracting raw metrics and computing derived ratios.
-    
-    Args:
-        retrieved_chunks (list): The list of text chunks found by the Retriever.
-        user_query (str): The original question (used for context if needed).
-        
-    Returns:
-        dict: A structured dictionary containing raw metrics, calculated ratios, and metadata.
+    Core Logic: Extracts raw metrics -> computes ratios -> reports missing data.
     """
-    combined_text = "\n".join(
-        chunk["content"] for chunk in retrieved_chunks
-    )
+    combined_text = "\n".join(chunk["content"] for chunk in retrieved_chunks)
 
-    # 1. Extract Key Metrics (STANDARD RISK METRICS)
+    # 1. Regex Extraction of Core Metrics
     metrics = {
         "total_debt": extract_metric(combined_text, ["total debt", "total borrowings", "long term borrowings"]),
         "total_equity": extract_metric(combined_text, ["total equity", "shareholder's equity", "net worth"]),
@@ -74,31 +57,29 @@ def analyze_financials(retrieved_chunks: list, user_query: str) -> dict:
         "interest_expense": extract_metric(combined_text, ["finance costs", "interest expense"]),
     }
     
-    # 2. Extract DYNAMIC Metrics based on User Query
-    user_query_lower = user_query.lower()
-    if "revenue" in user_query_lower or "sales" in user_query_lower:
+    # 2. Context-Aware Extraction (Depends on User Query)
+    query_lower = user_query.lower()
+    if "revenue" in query_lower or "sales" in query_lower:
         metrics["revenue"] = extract_metric(combined_text, ["revenue from operations", "total revenue", "revenue"])
     
-    if "profit" in user_query_lower or "net income" in user_query_lower:
+    if "profit" in query_lower or "net income" in query_lower:
         metrics["net_profit"] = extract_metric(combined_text, ["net profit", "profit for the period", "net income"])
         
-    if "cash flow" in user_query_lower:
+    if "cash flow" in query_lower:
         metrics["cash_flow"] = extract_metric(combined_text, ["cash flow from operating", "net cash from operating"])
 
-    # 3. Derive Ratios (Python Math - Deterministic)
+    # 3. Deterministic Ratio Calculation (Python Math)
     ratios = {
         "debt_to_equity": calculate_ratio(metrics.get("total_debt"), metrics.get("total_equity")),
         "interest_coverage": calculate_ratio(metrics.get("EBITDA"), metrics.get("interest_expense"))
     }
 
-    # 3. Identify Missing Data for Confidence Scoring
+    # 4. Metadata for Confidence Scoring
     missing = [k for k, v in metrics.items() if v is None]
 
-    analysis_result = {
+    return {
         "extracted_metrics": metrics,
         "derived_ratios": ratios,
         "missing_metrics": missing,
         "pages_used": list({chunk["page_no"] for chunk in retrieved_chunks})
     }
-
-    return analysis_result

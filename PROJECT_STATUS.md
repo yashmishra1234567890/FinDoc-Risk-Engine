@@ -1,7 +1,7 @@
 # 🚀 FinDoc Agentic AI - Project Status Report
 
-**Date:** January 10, 2026
-**Current Status:** ✅ Fully Functional Local MVP
+**Date:** January 15, 2026
+**Current Status:** ✅ Deployed & Fully Integrated (Backend + Frontend)
 
 ---
 
@@ -18,43 +18,46 @@ FinDoc is an autonomous **Agentic AI system** designed to analyze financial docu
 ## ✅ Achievements & Completed Phases
 
 ### 🧱 PHASE 1: Data Infrastructure (Completed)
-*   **Ingestion Engine**: Built robust PDF loader (`ingestion/loader.py`) handling both text-based and scanned (OCR) PDFs.
-*   **Smart Chunking**: implemented logic to detect and preserve **Tables** (`[TABLE START]...`) so agents can read structured data.
-*   **Vector Store**: Integrated **FAISS** with `sentence-transformers/all-MiniLM-L6-v2` for fast, local retrieval.
+*   **Ingestion Engine**: Built robust PDF loader (`ingestion/loader.py`) optimized for large files (300+ pages) using **Batch Processing** and **Streaming Uploads**.
+*   **Smart Chunking**: implemented logic to detect and preserve **Tables** (`[TABLE START]...`).
+*   **Vector Store**: Integrated **FAISS** (In-Memory) for fast retrieval on cloud instances.
 
 ### 🧠 PHASE 2: The Agentic Brain (Completed)
-*   **LangGraph Orchestration**: Implemented a state graph (`graph/graph.py`) to manage the workflow between agents.
-*   **Agent 1 (Decomposer)**: Breaks "Analyze debt" into "Get total debt", "Get equity", "Calculate ratio".
-*   **Agent 2 (Retriever)**: Fetches relevant pages without hallucination.
-*   **Agent 3 (Analyst) [UPGRADED]**:
-    *   Moved from LLM-guessing to **Pure Python Math**.
-    *   Uses Regex to extract `Total Debt`, `EBITDA`, etc.
-    *   Calculates `Debt-to-Equity` and `Interest Coverage` deterministically.
-*   **Agent 4 (Validator) [UPGRADED]**:
-    *   Implemented **Rule Engine** for RBI/SEBI norms (e.g., Flag High Risk if D/E > 2.0).
-    *   Added **Confidence Scoring** (0-100%) based on data availability.
-*   **Agent 5 (Summarizer)**: Synthesizes all data into a professional report.
+*   **LangGraph Orchestration**: Implemented a state graph (`graph/graph.py`) connecting 5 specialized agents.
+*   **Agent 1 (Decomposer)**: Breaks down queries into sub-tasks.
+*   **Agent 2 (Retriever)**: Fetches relevant pages, ignoring marketing fluff.
+*   **Agent 3 (Analyst)**:
+    *   **Pure Python Math** for financial ratios (Debt-to-Equity, Interest Coverage).
+    *   Extracts specific entities (Revenue, Debt, EBITDA) with Regex prioritization.
+*   **Agent 4 (Validator)**:
+    *   **Rule Engine** for RBI/SEBI norms (e.g., Flag High Risk if D/E > 2.0).
+    *   **Dynamic Confidence Scoring**: Calculates score (0-100%) based on missing metrics, retrieval quality, and source count.
+*   **Agent 5 (Summarizer)**: Synthesizes data into "Bank Report" style narratives with citations.
 
-### 🌐 PHASE 3: API & Access (Completed)
-*   **FastAPI Application**: Fully working REST API (`app/main.py`).
-*   **Endpoints**:
-    *   `POST /upload`: Ingests new financial PDFs.
-    *   `POST /query`: The main entry point for the Agentic Pipeline.
-    *   `GET /`: Welcome root.
-    *   `GET /health`: Health checks.
-*   **Stability**: Fixed circular import issues and package structure (`app.api...`). Validated server runs on `localhost:8001`.
+### 🌐 PHASE 3: API & Deployment (Completed)
+*   **Cloud Deployment**: Backend successfully deployed on **Render** (`findoc-risk-engine.onrender.com`).
+*   **Endpoints**: `POST /upload` (Streaming), `POST /query` (Agentic), `GET /health`.
+*   **Stability**: Handled OOM (Out of Memory) issues via Generator-based processing for large PDFs.
+
+### 🖥️ PHASE 4: Frontend UI (Completed)
+*   **Streamlit Dashboard**: Professional "Bank Terminal" UI (`frontend/app.py`).
+*   **Dual Mode**:
+    *   **Dashboard Mode**: Quick access buttons ("Analyze Risk", "Revenue") with Financial Metrics Grid and Risk Meters.
+    *   **Chat Mode**: Conversational interface for general questions with history.
+*   **Visualization**: Progress bars for confidence, expandable source citations, and metric cards.
 
 ---
 
 ## 📍 Current Position
-**The system is "Code Complete" for the MVP.**
-You can now:
-1.  Run the server (`python -m uvicorn app.main:app`).
-2.  Upload a PDF.
-3.  Ask complex financial questions via API.
-4.  Receive answers that are **calculated**, not just predicted.
+**The system is "Production Ready" for V1.**
+Users can:
+1.  Upload large Annual Reports via UI.
+2.  Get instant Risk Assessments with computed confidence.
+3.  View extracted Financial Metrics (Revenue, Debt) in a grid.
+4.  Drill down into source page snippets.
 
-## 🔮 Next Steps (Roadmap)
-1.  **UI Construction**: Build a Streamlit or React frontend so non-developers can use it.
-2.  **Deployment**: Dockerize the application and deploy to cloud (Render/AWS).
-3.  **Evaluation**: Run `evaluation/` scripts to benchmark accuracy against a "Gold Standard" dataset.
+## 🔮 Future Roadmap
+1.  **OCR Integration**: Re-enable Tesseract OCR for scanned/image-based PDFs (requires server with >512MB RAM).
+2.  **Persistent Storage**: Move from In-Memory FAISS to Pinecone/ChromaDB to save indices across restarts.
+3.  **Multi-Document Support**: Compare Q1 vs Q2 vs Q3 reports in a single query.
+4.  **Export Reports**: Generate PDF/Excel download of the analyis.
