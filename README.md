@@ -6,6 +6,8 @@
 ![AI](https://img.shields.io/badge/AI-LangGraph%20%2B%20OpenAI-orange)
 ![Status](https://img.shields.io/badge/Deployment-Render-purple)
 
+### 🚀 [Live Demo](https://yashmishra1234567890-findoc-risk-engine-frontendapp-0k0ooh.streamlit.app/)
+
 **FinDoc AI** is an intelligent, multi-agent system designed to analyze complex financial documents (Annual Reports, P&L Statements, Balance Sheets). It moves beyond simple "Chat with PDF" wrappers by using a **dedicated graph of specialized agents** to decompose queries, validate data, and compute strict financial ratios with deterministic accuracy.
 
 ---
