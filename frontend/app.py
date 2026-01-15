@@ -54,6 +54,25 @@ with st.sidebar:
     st.header("1️⃣ Upload Document")
     uploaded_file = st.file_uploader("Select PDF Report", type=['pdf'], label_visibility="collapsed")
     
+    # --- Sample Selection ---
+    st.markdown("---")
+    st.markdown("🚫 **No PDF? Try a Sample:**")
+    
+    sample_map = {
+        "Vodafone Idea (Telecom)": "data/financial_docs/VIL-QR-Q1FY25.pdf",
+        "Tata Steel (Manufacturing)": "data/financial_docs/sa-fy23-annual-finstatement.pdf",
+        "Tech Mahindra (IT Service)": "data/financial_docs/Financial Performance Report.pdf",
+        "Bajaj Finance (Banking)": "data/financial_docs/Q1 2024-25 Fact Sheet.pdf"
+    }
+
+    selected_sample = st.selectbox("Choose a sample report:", ["-- Select --"] + list(sample_map.keys()))
+    
+    process_sample = False
+    if selected_sample != "-- Select --":
+        if st.button(f"📄 Load {selected_sample}", use_container_width=True):
+            process_sample = True
+
+    # Logic: Prioritize manual upload, otherwise handle sample load
     if uploaded_file is not None:
         if st.session_state.uploaded_file != uploaded_file.name:
             with st.status("Ingesting Document...", expanded=True) as status:
@@ -101,6 +120,66 @@ with st.sidebar:
                     st.error(str(e))
         else:
             st.success(f"✅ {uploaded_file.name}")
+            
+    elif process_sample:
+        # Handle Sample Upload
+        f_path = sample_map[selected_sample]
+        f_name = os.path.basename(f_path)
+        
+        if st.session_state.uploaded_file != f_name:
+             with st.status(f"Ingesting {selected_sample}...", expanded=True) as status:
+                try:
+                    if not os.path.exists(f_path):
+                        st.error(f"Sample file not found at {f_path}")
+                        st.stop()
+                        
+                    with open(f_path, "rb") as f:
+                        file_bytes = f.read()
+
+                    files = {"file": (f_name, file_bytes, "application/pdf")}
+                    
+                    # 1. Upload File
+                    response = requests.post(f"{API_BASE_URL}/upload", files=files)
+                    
+                    if response.status_code == 200:
+                        task_data = response.json()
+                        task_id = task_data.get("task_id")
+                        st.write("Sample uploaded. Processing content...")
+                        
+                        # 2. Poll for Status
+                        if task_id:
+                            max_retries = 60
+                            for _ in range(max_retries):
+                                time.sleep(2)
+                                status_res = requests.get(f"{API_BASE_URL}/upload/status/{task_id}")
+                                if status_res.status_code == 200:
+                                    s = status_res.json()
+                                    if s["status"] == "completed":
+                                        st.session_state.uploaded_file = f_name
+                                        status.update(label="Ready for Analysis", state="complete", expanded=False)
+                                        st.success(f"Analysis Ready for {f_name}!")
+                                        st.rerun()
+                                        break
+                                    elif s["status"] == "failed":
+                                        status.update(label="Processing Failed", state="error")
+                                        st.error(f"Error: {s.get('message')}")
+                                        break
+                            else:
+                                status.update(label="Timeout", state="error")
+                        else:
+                             st.session_state.uploaded_file = f_name
+                             status.update(label="Ready", state="complete")
+
+                    else:
+                        st.error(f"Upload failed: {response.text}")
+                except Exception as e:
+                    st.error(f"Error: {str(e)}")
+        else:
+             st.success(f"✅ {f_name}")
+    
+    # Show current file if selected via sample and no upload widget active
+    if uploaded_file is None and st.session_state.uploaded_file:
+         st.info(f"📁 Active File: {st.session_state.uploaded_file}")
     
     st.markdown("---")
     
