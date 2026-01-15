@@ -47,8 +47,8 @@ if 'chat_history' not in st.session_state:
 
 # --- Sidebar ---
 with st.sidebar:
-    st.title("FinDoc AI")
-    st.markdown("**Agentic Financial Risk Analyzer**")
+    st.markdown("# 🏦 **FinDoc AI**")
+    st.caption("Agentic Financial Risk Analyzer")
     
     st.markdown("---")
     st.header("1️⃣ Upload Document")
@@ -60,9 +60,8 @@ with st.sidebar:
     
     sample_map = {
         "Vodafone Idea (Telecom)": "data/financial_docs/VIL-QR-Q1FY25.pdf",
-        "Tata Steel (Manufacturing)": "data/financial_docs/sa-fy23-annual-finstatement.pdf",
-        "Tech Mahindra (IT Service)": "data/financial_docs/Financial Performance Report.pdf",
-        "Bajaj Finance (Banking)": "data/financial_docs/Q1 2024-25 Fact Sheet.pdf"
+        "TCS (Tata Steel)": "data/financial_docs/sa-fy23-annual-finstatement.pdf",
+        "Tech Mahindra (IT Service)": "data/financial_docs/Financial Performance Report.pdf"
     }
 
     selected_sample = st.selectbox("Choose a sample report:", ["-- Select --"] + list(sample_map.keys()))
@@ -190,6 +189,8 @@ with st.sidebar:
             st.caption("🟢 System Online") 
     except:
         st.caption("🔴 System Offline")
+
+    st.warning("⚠️ **Disclaimer:** This demo runs on a free cloud instance. If the system is offline or slow, please wait 60 seconds for the server to wake up.")
 
 # --- Main Interface ---
 
