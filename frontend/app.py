@@ -47,7 +47,7 @@ if 'chat_history' not in st.session_state:
 
 # --- Sidebar ---
 with st.sidebar:
-    st.markdown("# 🏦 **FinDoc AI**")
+    st.markdown("## 🏦 <span style='color: #1E88E5'>**FinDoc AI**</span>", unsafe_allow_html=True)
     st.caption("Agentic Financial Risk Analyzer")
     
     st.markdown("---")
