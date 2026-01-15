@@ -129,6 +129,7 @@ with tab_dashboard:
         if metrics:
             m_cols = st.columns(4)
             for i, (k, v) in enumerate(metrics.items()):
+                # Explicit check: Show even if 0.0, but hide if None/Null
                 if v is not None:
                     nice_key = k.replace("_", " ").title()
                     nice_val = f"{v:,.2f}" if isinstance(v, float) else str(v)

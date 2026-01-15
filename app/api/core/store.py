@@ -37,3 +37,22 @@ def load_or_initialize_vectorstore():
 
 # Global singleton instance
 vectorstore = load_or_initialize_vectorstore()
+
+def reset_vectorstore():
+    """
+    Resets the global vectorstore in-place.
+    Crucial for clearing old document data when a new file is uploaded.
+    """
+    print("🧹 Clearing Vector Store...")
+    try:
+        # Create fresh components
+        new_index = faiss.IndexFlatL2(1536)
+        new_docstore = InMemoryDocstore()
+        
+        # Update the existing singleton provided to other modules
+        vectorstore.index = new_index
+        vectorstore.docstore = new_docstore
+        vectorstore.index_to_docstore_id = {}
+        print("✅ Vector Store Reset Complete.")
+    except Exception as e:
+        print(f"Error resetting vector store: {e}")

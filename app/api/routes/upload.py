@@ -6,7 +6,7 @@ from ingestion.loader import load_pdf
 from ingestion.chunking import chunk_financial_pages
 from ingestion.indexer import create_documents_from_chunks
 from app.api.core.config import DATA_DIR, VECTORSTORE_PATH
-from app.api.core.store import vectorstore
+from app.api.core.store import vectorstore, reset_vectorstore
 
 router = APIRouter(tags=["Ingestion"])
 logger = logging.getLogger(__name__)
@@ -18,6 +18,10 @@ def process_file_background(file_path: str):
     """
     try:
         logger.info(f"Starting background processing for: {file_path}")
+        
+        # 0. RESET STORE (Fix for stale data issue)
+        reset_vectorstore()
+        logger.info("Vector store reset for new document.")
         
         # 1. Load Generator (Lazy loading)
         pages_generator = load_pdf(file_path)
