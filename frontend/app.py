@@ -58,10 +58,40 @@ with st.sidebar:
             with st.status("Ingesting Document...", expanded=True) as status:
                 try:
                     files = {"file": (uploaded_file.name, uploaded_file.getvalue(), "application/pdf")}
+                    
+                    # 1. Upload File
                     response = requests.post(f"{API_BASE_URL}/upload", files=files)
+                    
                     if response.status_code == 200:
-                        st.session_state.uploaded_file = uploaded_file.name
-                        status.update(label="Ready for Analysis", state="complete", expanded=False)
+                        task_data = response.json()
+                        task_id = task_data.get("task_id")
+                        st.write("File uploaded. Processing content...")
+                        
+                        # 2. Poll for Status
+                        if task_id:
+                            max_retries = 60 # wait max 2 mins (2s * 60)
+                            for _ in range(max_retries):
+                                time.sleep(2)
+                                status_res = requests.get(f"{API_BASE_URL}/upload/status/{task_id}")
+                                if status_res.status_code == 200:
+                                    s = status_res.json()
+                                    if s["status"] == "completed":
+                                        st.session_state.uploaded_file = uploaded_file.name
+                                        status.update(label="Ready for Analysis", state="complete", expanded=False)
+                                        st.success("Analysis Ready! You can now use the dashboard.")
+                                        st.rerun() # Refresh to update state
+                                        break
+                                    elif s["status"] == "failed":
+                                        status.update(label="Processing Failed", state="error")
+                                        st.error(f"Error: {s.get('message')}")
+                                        break
+                            else:
+                                status.update(label="Timeout", state="error")
+                                st.error("Processing timed out. The file might be too large.")
+                        else:
+                             # Fallback for old API version
+                             st.session_state.uploaded_file = uploaded_file.name
+                             status.update(label="Ready (Legacy)", state="complete")
                     else:
                         status.update(label="Upload Failed", state="error")
                         st.error(response.text)
