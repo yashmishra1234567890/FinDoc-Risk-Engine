@@ -125,14 +125,6 @@ To help recruiters and users test the system immediately, we bundled real-world 
 
 ---
 
-## 🤝 Contributing
-1.  Fork the Project
-2.  Create your Feature Branch (`git checkout -b feature/AmazingFeature`)
-3.  Commit your Changes (`git commit -m 'Add some AmazingFeature'`)
-4.  Push to the Branch (`git push origin feature/AmazingFeature`)
-5.  Open a Pull Request
-
----
 
 ### ⚠️ Disclaimer
 FinDoc AI is a support tool for financial analysis. While it uses advanced validation logic, all financial decisions should be verified by human professionals. The demo runs on free cloud instances and may experience "cold start" latency.
