@@ -51,7 +51,7 @@ Answer:
 """
 
     response = client.chat.completions.create(
-        model="mistralai/mistral-7b-instruct",
+        model="mistralai/mistral-7b-instruct:free",
         messages=[{"role": "user", "content": prompt}],
         temperature=0.2
     )
