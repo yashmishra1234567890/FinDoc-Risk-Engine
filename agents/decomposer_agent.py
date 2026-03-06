@@ -24,7 +24,7 @@ Return as bullet points.
 
     try:
         response = client.chat.completions.create(
-            model="mistralai/mistral-7b-instruct:free",
+            model="mistralai/mistral-7b-instruct-v0.1",
             messages=[{"role": "user", "content": prompt}],
             temperature=0.2
         )
