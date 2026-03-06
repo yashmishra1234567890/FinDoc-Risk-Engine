@@ -18,8 +18,9 @@ if not os.path.exists("vectorstore/faiss_index"):
 
 embedder = get_embedding_model()
 try:
+    trusted_path = os.path.abspath("vectorstore/faiss_index")
     vectorstore = FAISS.load_local(
-        "vectorstore/faiss_index", 
+        trusted_path, 
         embedder, 
         allow_dangerous_deserialization=True
     )
@@ -35,3 +36,4 @@ state = GraphState(
 
 result = app.invoke(state)
 print(result["final_answer"])
+#D:/Findoc_agentic_ai/venv/Scripts/python.exe tests/test_phase2.py for testing

@@ -32,7 +32,8 @@ def run_pipeline():
     print(f"Loading vector store from {VECTORSTORE_PATH}...")
     try:
         embedder = get_embedding_model()
-        vectorstore = FAISS.load_local(VECTORSTORE_PATH, embedder, allow_dangerous_deserialization=True)
+        trusted_path = os.path.abspath(VECTORSTORE_PATH)
+        vectorstore = FAISS.load_local(trusted_path, embedder, allow_dangerous_deserialization=True)
         print("Vector store loaded successfully.")
     except Exception as e:
         print(f"Error loading vector store: {e}")

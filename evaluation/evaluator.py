@@ -47,7 +47,8 @@ def run_evaluation():
     print(f"Loading system resources...")
     embedder = get_embedding_model()
     try:
-        vectorstore = FAISS.load_local(VECTORSTORE_PATH, embedder, allow_dangerous_deserialization=True)
+        trusted_path = os.path.abspath(VECTORSTORE_PATH)
+        vectorstore = FAISS.load_local(trusted_path, embedder, allow_dangerous_deserialization=True)
         app = build_graph(vectorstore)
     except Exception as e:
         print(f"❌ Failed to load vector store: {e}")

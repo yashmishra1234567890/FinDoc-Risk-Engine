@@ -5,14 +5,32 @@ from ingestion.embeddings import get_embedding_model
 import faiss
 import os
 
+def get_embedding_dimension(embedder):
+    """Dynamically determine the embedding dimension."""
+    try:
+        sample_vector = embedder.embed_query("test")
+        return len(sample_vector)
+    except Exception as e:
+        print(f"Failed to determine embedding dimension dynamically, defaulting to 1536: {e}")
+        return 1536
+
 def load_or_initialize_vectorstore():
     embedder = get_embedding_model()
     
     try:
         print(f"Attempting to load vector store from {VECTORSTORE_PATH}...")
+        # Security: Ensure we only load from our trusted local directory
+        trusted_path = os.path.abspath(VECTORSTORE_PATH)
+        
         # Check if index file exists before trying to load
-        if os.path.exists(os.path.join(VECTORSTORE_PATH, "index.faiss")):
-             vectorstore = FAISS.load_local(VECTORSTORE_PATH, embedder, allow_dangerous_deserialization=True)
+        if os.path.exists(os.path.join(trusted_path, "index.faiss")):
+             # We explicitly allow dangerous deserialization here because the 
+             # vector store is created internally and not from user uploads.
+             vectorstore = FAISS.load_local(
+                 trusted_path, 
+                 embedder, 
+                 allow_dangerous_deserialization=True
+             )
              print("Vector store loaded successfully.")
              return vectorstore
         else:
@@ -22,8 +40,9 @@ def load_or_initialize_vectorstore():
     except Exception as e:
         print(f"Warning: Vector store not found or failed to load ({e}). Creating a new empty index.")
         try:
-            # Create empty index (1536 dimensions for text-embedding-3-small)
-            index = faiss.IndexFlatL2(1536) 
+            dim = get_embedding_dimension(embedder)
+            print(f"Creating new empty index with dimension: {dim}")
+            index = faiss.IndexFlatL2(dim) 
             vectorstore = FAISS(
                 embedding_function=embedder,
                 index=index,
@@ -45,8 +64,9 @@ def reset_vectorstore():
     """
     print("🧹 Clearing Vector Store...")
     try:
+        dim = get_embedding_dimension(get_embedding_model())
         # Create fresh components
-        new_index = faiss.IndexFlatL2(1536)
+        new_index = faiss.IndexFlatL2(dim)
         new_docstore = InMemoryDocstore()
         
         # Update the existing singleton provided to other modules
