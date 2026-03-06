@@ -60,7 +60,6 @@ with st.sidebar:
     
     sample_map = {
         "Vodafone Idea (Telecom)": "data/financial_docs/VIL-QR-Q1FY25.pdf",
-        "TCS (Tata Steel)": "data/financial_docs/sa-fy23-annual-finstatement.pdf",
         "Tech Mahindra (IT Service)": "data/financial_docs/Financial Performance Report.pdf"
     }
 
