@@ -4,6 +4,9 @@ from app.api.core.config import VECTORSTORE_PATH
 from ingestion.embeddings import get_embedding_model
 import faiss
 import os
+import logging
+
+logger = logging.getLogger(__name__)
 
 def get_embedding_dimension(embedder):
     """Dynamically determine the embedding dimension."""
@@ -11,14 +14,14 @@ def get_embedding_dimension(embedder):
         sample_vector = embedder.embed_query("test")
         return len(sample_vector)
     except Exception as e:
-        print(f"Failed to determine embedding dimension dynamically, defaulting to 1536: {e}")
+        logger.warning(f"Failed to determine embedding dimension dynamically, defaulting to 1536: {e}")
         return 1536
 
 def load_or_initialize_vectorstore():
     embedder = get_embedding_model()
     
     try:
-        print(f"Attempting to load vector store from {VECTORSTORE_PATH}...")
+        logger.info(f"Attempting to load vector store from {VECTORSTORE_PATH}...")
         # Security: Ensure we only load from our trusted local directory
         trusted_path = os.path.abspath(VECTORSTORE_PATH)
         
@@ -30,17 +33,17 @@ def load_or_initialize_vectorstore():
                  embedder, 
                  allow_dangerous_deserialization=True
              )
-             print("Vector store loaded successfully.")
+             logger.info("Vector store loaded successfully.")
              return vectorstore
         else:
-             print("Index file not found. Creating new.")
+             logger.info("Index file not found. Creating new.")
              raise RuntimeError("Index not found")
              
     except Exception as e:
-        print(f"Warning: Vector store not found or failed to load ({e}). Creating a new empty index.")
+        logger.warning(f"Warning: Vector store not found or failed to load ({e}). Creating a new empty index.")
         try:
             dim = get_embedding_dimension(embedder)
-            print(f"Creating new empty index with dimension: {dim}")
+            logger.info(f"Creating new empty index with dimension: {dim}")
             index = faiss.IndexFlatL2(dim) 
             vectorstore = FAISS(
                 embedding_function=embedder,
@@ -50,7 +53,7 @@ def load_or_initialize_vectorstore():
             )
             return vectorstore
         except Exception as inner_e:
-            print(f"Critical Error creating empty index: {inner_e}")
+            logger.error(f"Critical Error creating empty index: {inner_e}")
             raise inner_e
 
 # Global singleton instance
@@ -61,7 +64,7 @@ def reset_vectorstore():
     Resets the global vectorstore in-place.
     Crucial for clearing old document data when a new file is uploaded.
     """
-    print("🧹 Clearing Vector Store...")
+    logger.info("🧹 Clearing Vector Store...")
     try:
         dim = get_embedding_dimension(get_embedding_model())
         # Create fresh components
@@ -72,6 +75,6 @@ def reset_vectorstore():
         vectorstore.index = new_index
         vectorstore.docstore = new_docstore
         vectorstore.index_to_docstore_id = {}
-        print("✅ Vector Store Reset Complete.")
+        logger.info("✅ Vector Store Reset Complete.")
     except Exception as e:
-        print(f"Error resetting vector store: {e}")
+        logger.error(f"Error resetting vector store: {e}")

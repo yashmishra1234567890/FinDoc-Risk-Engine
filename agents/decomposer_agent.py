@@ -1,5 +1,8 @@
 import os
+import logging
 from openai import OpenAI
+
+logger = logging.getLogger(__name__)
 
 def get_client():
     return OpenAI(
@@ -38,6 +41,6 @@ Return as bullet points.
         return sub_questions
 
     except Exception as e:
-        print(f"Decomposer Error: {e}")
+        logger.error(f"Decomposer Error: {e}")
         # Critical Fallback: Ensure we never return empty list, or the retriever will do nothing
         return [user_query]
