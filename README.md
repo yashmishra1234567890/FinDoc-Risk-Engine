@@ -1,5 +1,5 @@
 # 🏦 FinDoc Risk Engine  
-**Your Smart, Agentic Financial Analyst**  
+**Your Agentic, Decision-Support Financial Analyst**  
 
 ![Python](https://img.shields.io/badge/Python-3.10%2B-blue)
 ![Framework](https://img.shields.io/badge/Framework-FastAPI%20%7C%20Streamlit-green)
@@ -8,9 +8,31 @@
 
 ### 🚀 [Live Demo](https://yashmishra1234567890-findoc-risk-engine-frontendapp-0k0ooh.streamlit.app/)
 
-Hey there! Welcome to **FinDoc AI**, an intelligent multi-agent system built to decode, analyze, and compute risks from complex financial documents like Annual Reports and Balance Sheets. 
+---
+
+## 🎥 Quick Demo
+Upload a massive Annual Report and watch FinDoc's team of specialized AI agents extract complex metrics, compute strict financial ratios, and generate a confidence-backed risk assessment in seconds. 
+*Watch the [Demo Video Here](#) (Placeholder)*
+
+## 🧠 Project Overview
+FinDoc is designed as a **decision-support AI system**, combining LLM semantic reasoning with strict rule-based validation to produce reliable financial risk insights.
 
 Instead of just being another "Chat with PDF" wrapper, FinDoc uses a **team of specialized AI agents** working together to break down questions, validate the math, and compute strict financial ratios so you get reliable insights, not hallucinations.
+
+---
+
+## 🧩 The Problem Statement
+Financial analysis requires navigating massive 300+ page PDFs to find scattered metrics (Revenue, EBITDA, Debt, Interest) hidden in tiny tables. Traditional RAG systems frequently hallucinate numbers or fail at mathematical reasoning (like computing an Interest Coverage Ratio). 
+**FinDoc solves this** by mathematically validating the extractions using standard financial rules before returning an answer.
+
+---
+
+## 💬 Example Query
+**User:** *"Analyze the debt risk and interest coverage for this year."*  
+**FinDoc Pipeline:**
+1. Breaks query into "Total Debt", "EBITDA", and "Interest Expense" searches.
+2. Extracts specific numbers and checks the math.
+3. **Output:** "Interest Coverage Ratio is 4.5x with a 95% Confidence Score. Risk Level is Low."
 
 ---
 
@@ -26,30 +48,25 @@ Instead of just being another "Chat with PDF" wrapper, FinDoc uses a **team of s
 
 ---
 
-## 🌟 Key Features
+## ✨ Engineering Highlights
 
-### 🧠 1. Multi-Agent Architecture (LangGraph)
-Unlike standard RAG, FinDoc uses a team of agents:
--   **Decomposer Agent**: Breaks down complex questions (e.g., "Analyze debt risk") into atomic sub-tasks.
--   **Retriever Agent**: Uses dense vector search (FAISS) with Reciprocal Rank Fusion to find scattered data.
--   **Analyst Agent**: Extracts specific metrics (Revenue, EBITDA) and computes Python-based ratios (Interest Coverage).
--   **Validator Agent**: Cross-checks extracted numbers against logical rules (e.g., Debt cannot be negative) and flagged logic.
--   **Summarizer Agent**: Synthesizes a human-readable report with citations.
-
-### 🛡️ 2. Dynamic Confidence Scoring
-The system doesn't just guess. It assigns a **Confidence Score (0-100%)** based on:
--   **Data Completeness**: Did we find all required metrics for the ratio?
--   **Source Density**: Did the info appear on multiple pages?
--   **Rule Validation**: Did the math pass sanity checks?
-
-### ⚡ 3. Real-Time Processing
--   **Smart Ingestion**: Recursive chunking strategies that respect financial tables and paragraphs.
--   **Auto-Reset Memory**: Guarantees clean state between uploads (no "hallucinating" data from previous files).
--   **Polling UI**: Real-time status feedback during heavy document processing.
+*   **Multi-Agent AI Architecture:** Implemented a LangGraph-based agent system (Decomposer → Retriever → Analyst → Validator → Summarizer) instead of relying on a single LLM response.
+*   **Numerical Reasoning + Validation:** Extracts financial metrics (Revenue, EBITDA, Debt) and computes ratios while computationally validating results against rule-based checks.
+*   **Robust RAG Pipeline:** Uses FAISS vector search + Reciprocal Rank Fusion to retrieve tables and paragraphs from huge annual reports.
+*   **Confidence Scoring Engine:** Generates a 0–100% reliability score based on data completeness, rule validation, and source density.
+*   **Async Document Processing:** Handles 300+ page annual reports without blocking the UI utilizing FastAPI background tasks.
+*   **Security-Hardened Vector Store:** Path containment and safe deserialization safeguards protect FAISS ingestion from malicious pickle injection.
+*   **Dynamic Embedding Compatibility:** Automatically scales vector dimensions to allow seamless swapping of embedding models.
 
 ---
 
 ## 🏗️ System Architecture
+
+FinDoc processes data sequentially through a cyclic agent graph:
+1. **Decomposer** splits the query.
+2. **Retriever** fetches chunks.
+3. **Analyst** calculates formulas.
+4. **Validator** logically rules out hallucinations.
 
 ```mermaid
 graph TD
@@ -74,7 +91,7 @@ graph TD
 
 ### Prerequisites
 - Python 3.10+
-- OpenAI API Key (or OpenRouter)
+- OpenRouter API Key
 
 ### 1. Clone Repository
 ```bash
@@ -108,11 +125,17 @@ streamlit run frontend/app.py
 
 ---
 
-## 📂 Sample Documents Included
-To help recruiters and users test the system immediately, we bundled real-world examples:
-1.  **Vodafone Idea (Telecom)**: High Debt analysis scenario.
-2.  **TCS (Steel/Manufacturing)**: Complex balance sheet structure.
-3.  **Tech Mahindra (IT Services)**: Revenue and growth analysis.
+## 📂 Project Structure
+```text
+├── agents/             # The LangGraph Agent Logic
+├── app/                # FastAPI backend routers and config
+├── data/               # Pre-loaded PDF Sample Reports
+├── evaluation/         # Baseline testing and PyTest RAG evaluation
+├── frontend/           # Streamlit UI dashboard
+├── graph/              # Langchain State definitions and Nodes
+├── ingestion/          # PDF Chunking, RRF Loading, Embeddings
+└── vectorstore/        # Hardened FAISS Local indexes
+```
 
 ---
 
@@ -124,6 +147,14 @@ To help recruiters and users test the system immediately, we bundled real-world 
 -   **Frontend**: [Streamlit](https://streamlit.io/)
 -   **Parsing**: PDFPlumber & RecursiveCharacterSplitter
 -   **Deployment**: Render (Dockerized)
+
+---
+
+## 🔮 Future Improvements Roadmap
+- [ ] Multi-user vector database isolation (Session-based FAISS)
+- [ ] Migrate `print()` statements to structured Python `logging`
+- [ ] Complete Dockerized deployment with isolated DB container
+- [ ] Support Streaming chunked LLM responses to frontend
 
 ---
 
@@ -142,12 +173,9 @@ Results will be saved to `evaluation/results.md`.
 
 ## ☁️ Deployment (Render)
 
-1.  Push this repository to GitHub/GitLab.
+1.  Push this repository to GitHub.
 2.  Create a **Web Service** on [Render](https://render.com/).
 3.  Connect your repository.
 4.  Render will automatically detect the `Procfile` and `requirements.txt`.
 5.  **Important**: Add your `OPENROUTER_API_KEY` in the Render Environment Variables settings.
 6.  Deploy!
-
-## 📊 Evaluation Results
-See [evaluation/results.md](evaluation/results.md) for the latest benchmark runs.
