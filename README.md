@@ -1,5 +1,5 @@
 # 🏦 FinDoc Risk Engine  
-**Agentic Financial Analysis & Risk Computation System**  
+**Your Smart, Agentic Financial Analyst**  
 
 ![Python](https://img.shields.io/badge/Python-3.10%2B-blue)
 ![Framework](https://img.shields.io/badge/Framework-FastAPI%20%7C%20Streamlit-green)
@@ -8,7 +8,9 @@
 
 ### 🚀 [Live Demo](https://yashmishra1234567890-findoc-risk-engine-frontendapp-0k0ooh.streamlit.app/)
 
-**FinDoc AI** is an intelligent, multi-agent system designed to analyze complex financial documents (Annual Reports, P&L Statements, Balance Sheets). It moves beyond simple "Chat with PDF" wrappers by using a **dedicated graph of specialized agents** to decompose queries, validate data, and compute strict financial ratios with deterministic accuracy.
+Hey there! Welcome to **FinDoc AI**, an intelligent multi-agent system built to decode, analyze, and compute risks from complex financial documents like Annual Reports and Balance Sheets. 
+
+Instead of just being another "Chat with PDF" wrapper, FinDoc uses a **team of specialized AI agents** working together to break down questions, validate the math, and compute strict financial ratios so you get reliable insights, not hallucinations.
 
 ---
 

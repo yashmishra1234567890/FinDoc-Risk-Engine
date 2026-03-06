@@ -24,8 +24,7 @@ def load_or_initialize_vectorstore():
         
         # Check if index file exists before trying to load
         if os.path.exists(os.path.join(trusted_path, "index.faiss")):
-             # We explicitly allow dangerous deserialization here because the 
-             # vector store is created internally and not from user uploads.
+             # We trust this path since it's an internally generated index, not a direct user upload.
              vectorstore = FAISS.load_local(
                  trusted_path, 
                  embedder, 

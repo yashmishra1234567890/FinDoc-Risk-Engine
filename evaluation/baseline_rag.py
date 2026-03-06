@@ -22,9 +22,9 @@ class BaselineRAG:
         print("Loading Baseline RAG resources...")
         self.embeddings = get_embedding_model()
         
-        # Security: Resolve absolute path before loading
+        # Secure the path before loading memory files
         trusted_path = os.path.abspath(VECTORSTORE_PATH)
-        # Allow dangerous deserialization since we created the index ourselves (trusted path only)
+        # Trust this path since it's an internally generated index
         self.vectorstore = FAISS.load_local(
             trusted_path, 
             self.embeddings, 
