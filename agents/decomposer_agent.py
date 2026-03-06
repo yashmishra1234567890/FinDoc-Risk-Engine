@@ -1,6 +1,5 @@
 import os
 from openai import OpenAI
-from graph.state import GraphState
 
 def get_client():
     return OpenAI(
@@ -42,11 +41,3 @@ Return as bullet points.
         print(f"Decomposer Error: {e}")
         # Critical Fallback: Ensure we never return empty list, or the retriever will do nothing
         return [user_query]
-
-    lines = response.choices[0].message.content.split("\n")
-    sub_questions = [
-        line.strip("-• ").strip()
-        for line in lines if line.strip()
-    ]
-
-    return sub_questions

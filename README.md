@@ -88,7 +88,7 @@ pip install -r requirements.txt
 ### 3. Configure Environment
 Create a `.env` file in the root directory:
 ```ini
-OPENAI_API_KEY=sk-xxxx...
+OPENROUTER_API_KEY=sk-xxxx...
 # Optional: Set Project Root
 PYTHONPATH=.
 ```
@@ -131,6 +131,9 @@ FinDoc AI is a support tool for financial analysis. While it uses advanced valid
 
 ---
 *Built with ❤️ by [Yash Mishra]*
+
+## 📊 Evaluation 
+```bash
 python -m evaluation.evaluator
 ```
 Results will be saved to `evaluation/results.md`.
@@ -141,7 +144,7 @@ Results will be saved to `evaluation/results.md`.
 2.  Create a **Web Service** on [Render](https://render.com/).
 3.  Connect your repository.
 4.  Render will automatically detect the `Procfile` and `requirements.txt`.
-5.  **Important**: Add your `OPENAI_API_KEY` in the Render Environment Variables settings.
+5.  **Important**: Add your `OPENROUTER_API_KEY` in the Render Environment Variables settings.
 6.  Deploy!
 
 ## 📊 Evaluation Results
