@@ -88,7 +88,7 @@ with st.sidebar:
                         
                         # 2. Poll for Status
                         if task_id:
-                            max_retries = 60 # wait max 2 mins (2s * 60)
+                            max_retries = 180 # wait max 6 mins (2s * 180) to handle larger files
                             for _ in range(max_retries):
                                 time.sleep(2)
                                 status_res = requests.get(f"{API_BASE_URL}/upload/status/{task_id}")
@@ -147,7 +147,7 @@ with st.sidebar:
                         
                         # 2. Poll for Status
                         if task_id:
-                            max_retries = 60
+                            max_retries = 180 # increased for bigger annual reports
                             for _ in range(max_retries):
                                 time.sleep(2)
                                 status_res = requests.get(f"{API_BASE_URL}/upload/status/{task_id}")
