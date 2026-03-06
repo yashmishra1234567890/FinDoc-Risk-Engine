@@ -163,7 +163,6 @@ streamlit run frontend/app.py
 FinDoc AI is a support tool for financial analysis. While it uses advanced validation logic, all financial decisions should be verified by human professionals. The demo runs on free cloud instances and may experience "cold start" latency.
 
 ---
-*Built with ❤️ by [Yash Mishra]*
 
 ## 📊 Evaluation 
 ```bash
