@@ -1,19 +1,7 @@
-import os
-from openai import OpenAI
-from graph.state import GraphState
-
-def get_client():
-    return OpenAI(
-        base_url="https://openrouter.ai/api/v1",
-        api_key=os.getenv("OPENROUTER_API_KEY"),
-    )
-
 def validate_analysis(analysis_result):
     """
-    Applies RBI/SEBI norms to financial data and assigns a confidence score.
+    Applies RBI/SEBI norms to financial data and assigns a confidence score using pure Python (No LLM call).
     """
-    client = get_client()
-    
     metrics = analysis_result.get("extracted_metrics", {})
     ratios = analysis_result.get("derived_ratios", {})
     missing = analysis_result.get("missing_metrics", [])
@@ -49,33 +37,16 @@ def validate_analysis(analysis_result):
     total_expected = 6 
     found_count = total_expected - len(missing)
     confidence_score = round(found_count / total_expected, 2)
-    
-    confidence_level = "High" if confidence_score > 0.8 else "Medium" if confidence_score > 0.5 else "Low"
 
-    # 3. LLM Qualitative Assessment
-    prompt = f"""
-You are a financial risk officer.
-Review these automated findings and provide a professional assessment.
-
-Financial Data: {metrics}
-Ratios: {ratios}
-System Flags: {rule_flags}
-Missing Data: {missing}
-
-Task:
-- Summarize the key risks based on the flags.
-- If critical data is missing (like Revenue or Debt), highlight it.
-- Keep tone professional and direct.
-"""
-
-    response = client.chat.completions.create(
-        model="mistralai/mistral-7b-instruct-v0.1",
-        messages=[{"role": "user", "content": prompt}],
-        temperature=0.2
-    )
+    # 3. Fast Python Assessment (Removed LLM call for speed)
+    assessment = "Automated Python Validation: "
+    if rule_flags:
+        assessment += " | ".join(rule_flags)
+    else:
+        assessment += "No specific risk flags triggered."
 
     return {
         "rule_engine_flags": rule_flags,
         "confidence_score": confidence_score,
-        "assessment": response.choices[0].message.content
+        "assessment": assessment
     }

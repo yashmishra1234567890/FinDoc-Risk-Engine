@@ -9,18 +9,22 @@ def retrieve_content(sub_questions, vectorstore):
         return []
 
     for q in sub_questions:
-        # Increase k to 15 to ensure we capture relevant financial tables which might be far down the list
-        chunks = retrieve_chunks(vectorstore, q, k=15)
+        # Reduced k from 15 to 6 to save LLM context window and increase speed
+        chunks = retrieve_chunks(vectorstore, q, k=6)
         all_chunks.extend(chunks)
 
-    # Deduplicate chunks based on content to avoid processing same text twice
+    # Deduplicate and trim chunks completely
     unique_chunks = []
     seen = set()
     for chunk in all_chunks:
-        # Create a hashable representation (using page_no and content snippet)
-        identifier = f"{chunk['page_no']}_{chunk['content'][:50]}"
+        # Create a hashable and trimmed representation
+        clean_text = " ".join(chunk['content'].split())  # Trim excess whitespaces
+        identifier = f"{chunk['page_no']}_{clean_text[:50]}"
+        
         if identifier not in seen:
             seen.add(identifier)
+            chunk['content'] = clean_text # Store trimmed version
             unique_chunks.append(chunk)
 
-    return unique_chunks
+    # Limit to top 6 most relevant chunks total to drastically reduce prompt size
+    return unique_chunks[:6]

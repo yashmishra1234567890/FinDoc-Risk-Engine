@@ -15,15 +15,23 @@ logger = logging.getLogger(__name__)
 
 # Global Status Tracking
 upload_status: Dict[str, dict] = {}
+last_processed_file: str = None  # Cache tracker
 
 def process_file_background(file_path: str, task_id: str):
     """
     Heavy lifting task that runs in the background.
     Optimized for low memory usage (batch processing).
     """
+    global last_processed_file
     try:
         logger.info(f"Starting background processing for task {task_id}: {file_path}")
         
+        # Optimization: Reuse index if it's the exact same file
+        if last_processed_file == file_path and os.path.exists(os.path.join(VECTORSTORE_PATH, "index.faiss")):
+            logger.info("File already indexed. Bypassing re-embedding to save time.")
+            upload_status[task_id] = {"status": "completed", "message": "Reused existing vector index."}
+            return
+
         # 0. RESET STORE (Fix for stale data issue)
         reset_vectorstore()
         logger.info("Vector store reset for new document.")
@@ -49,6 +57,9 @@ def process_file_background(file_path: str, task_id: str):
         os.makedirs("vectorstore", exist_ok=True)
         vectorstore.save_local(VECTORSTORE_PATH)
         logger.info("Vectorstore saved successfully")
+        
+        # Update Cache Tracker
+        last_processed_file = file_path
         
         # Update Status
         upload_status[task_id] = {"status": "completed", "message": "Indexing successful"}
