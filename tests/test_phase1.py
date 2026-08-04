@@ -11,11 +11,11 @@ from ingestion.indexer import build_index
 from retrieval.retriever import retrieve_chunks
 
 
-PDF_PATH = "data/financial_docs/Zomato_Annual_Report_2022-23.pdf"
+PDF_PATH = "data/financial_docs/VIL-QR-Q1FY25.pdf"
 
 
 def run_phase1_test():
-    pages = load_pdf(PDF_PATH)
+    pages = list(load_pdf(PDF_PATH))
     print(f"Pages loaded: {len(pages)}")
 
     chunks = chunk_financial_pages(pages)
