@@ -7,10 +7,10 @@ sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '.')))
 from ingestion.loader import load_pdf
 from ingestion.chunking import chunk_financial_pages
 from ingestion.embeddings import get_embedding_model
-from ingestion.indexer import build_faiss_index
+from ingestion.indexer import build_index
 
 PDF_PATH = "data/financial_docs/Zomato_Annual_Report_2022-23.pdf"
-INDEX_PATH = "vectorstore/faiss_index"
+INDEX_PATH = "vectorstore/index"
 
 def generate_index():
     print("Loading PDF...")
@@ -23,10 +23,9 @@ def generate_index():
     embedder = get_embedding_model()
     
     print("Building Index...")
-    vectorstore = build_faiss_index(chunks, embedder)
+    vectorstore = build_index(chunks, embedder)
     
-    print(f"Saving index to {INDEX_PATH}...")
-    vectorstore.save_local(INDEX_PATH)
+    print(f"Index built and saved to {INDEX_PATH} (Chroma handles persistence)")
     print("Done!")
 
 if __name__ == "__main__":

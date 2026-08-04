@@ -1,5 +1,8 @@
 from fastapi import FastAPI
 import logging
+from dotenv import load_dotenv
+
+load_dotenv()
 
 # Configure logging to show INFO level logs in Render console
 logging.basicConfig(

@@ -46,6 +46,8 @@ def analyze_financials(retrieved_chunks: list, user_query: str) -> dict:
     Core Logic: Extracts raw metrics -> computes ratios -> reports missing data.
     """
     combined_text = "\n".join(chunk["content"] for chunk in retrieved_chunks)
+    source_lines = [line.strip() for line in combined_text.splitlines() if line.strip()]
+    company_name = source_lines[0][:120] if source_lines else None
 
     # 1. Regex Extraction of Core Metrics
     metrics = {
@@ -81,5 +83,6 @@ def analyze_financials(retrieved_chunks: list, user_query: str) -> dict:
         "extracted_metrics": metrics,
         "derived_ratios": ratios,
         "missing_metrics": missing,
-        "pages_used": list({chunk["page_no"] for chunk in retrieved_chunks})
+        "pages_used": list({chunk["page_no"] for chunk in retrieved_chunks}),
+        "company_name": company_name,
     }

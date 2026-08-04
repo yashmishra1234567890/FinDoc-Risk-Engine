@@ -1,7 +1,7 @@
 import os
 import sys
-from openai import OpenAI
-from langchain_community.vectorstores import FAISS
+from openrouter import OpenRouter
+from langchain_community.vectorstores import Chroma
 from ingestion.embeddings import get_embedding_model
 from app.api.core.config import VECTORSTORE_PATH
 from dotenv import load_dotenv
@@ -25,15 +25,11 @@ class BaselineRAG:
         # Secure the path before loading memory files
         trusted_path = os.path.abspath(VECTORSTORE_PATH)
         # Trust this path since it's an internally generated index
-        self.vectorstore = FAISS.load_local(
-            trusted_path, 
-            self.embeddings, 
-            allow_dangerous_deserialization=True
+        self.vectorstore = Chroma(
+            persist_directory=trusted_path, 
+            embedding_function=self.embeddings
         )
-        self.client = OpenAI(
-            base_url="https://openrouter.ai/api/v1",
-            api_key=os.getenv("OPENROUTER_API_KEY"),
-        )
+        self.client = OpenRouter(api_key=os.getenv("OPENROUTER_API_KEY", ""))
     
     def run(self, query: str) -> str:
         # 1. Retrieve Context
@@ -51,10 +47,9 @@ Context:
 Question: {query}
 """
         
-        response = self.client.chat.completions.create(
-            model="mistralai/mistral-7b-instruct-v0.1",
-            messages=[{"role": "user", "content": prompt}],
-            temperature=0.1
+        response = self.client.chat.send(
+            model="mistralai/ministral-8b-2512",
+            messages=[{"role": "user", "content": prompt}]
         )
         return response.choices[0].message.content
 

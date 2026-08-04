@@ -26,8 +26,8 @@ data/samples/*
 !data/samples/.gitkeep
 
 # Vector Store (Local artifacts)
-vectorstore/faiss_index/*
-!vectorstore/faiss_index/.gitkeep
+vectorstore/index/*
+!vectorstore/index/.gitkeep
 
 # Generated Reports
 reports/*

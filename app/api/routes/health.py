@@ -1,5 +1,5 @@
 from fastapi import APIRouter
-from app.api.core.store import vectorstore
+from app.api.core.store import get_vectorstore
 
 router = APIRouter(tags=["Health"])
 
@@ -8,8 +8,7 @@ def health():
     # Return basic health plus vector store stats
     doc_count = 0
     try:
-        # FAISS implementation details
-        doc_count = vectorstore.index.ntotal
+        doc_count = get_vectorstore()._collection.count()
     except Exception:
         pass
         

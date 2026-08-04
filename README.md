@@ -51,12 +51,13 @@ Financial analysis requires navigating massive 300+ page PDFs to find scattered 
 ## ✨ Engineering Highlights
 
 *   **Multi-Agent AI Architecture:** Implemented a LangGraph-based agent system (Decomposer → Retriever → Analyst → Validator → Summarizer) instead of relying on a single LLM response.
-*   **Performance Optimized Pipeline:** Eliminated redundant LLM calls by shifting Validator logic to pure Python deterministic rules, caching FAISS indices, and reducing retrieval context window `k` limits, resulting in a **3x faster response time**.
+*   **Performance Optimized Pipeline:** Eliminated redundant LLM calls by shifting Validator logic to pure Python deterministic rules, persisting Chroma indices on disk, and reducing retrieval context window `k` limits, resulting in a **3x faster response time**.
 *   **Numerical Reasoning + Validation:** Extracts financial metrics (Revenue, EBITDA, Debt) and computes ratios while computationally validating results against algorithmic benchmarks.
-*   **Robust RAG Pipeline:** Uses FAISS vector search + Reciprocal Rank Fusion to retrieve tables and paragraphs from huge annual reports and removes duplicate document chunks to save token limits.
-*   **Confidence Scoring Engine:** Generates a 0–100% reliability score based on data completeness, rule validation, and source density.
+*   **Robust RAG Pipeline:** Uses disk-backed Chroma vector search + Reciprocal Rank Fusion to retrieve tables and paragraphs from huge annual reports and removes duplicate document chunks to save token limits.
+*   **Federated Validation:** Cross-checks extracted metrics against the PDF, live Yahoo Finance market data, and SEC EDGAR snapshots for a more grounded risk signal.
+*   **Confidence Scoring Engine:** Generates a 0–100% reliability score based on data completeness, rule validation, source density, and market temperature.
 *   **Async Document Processing:** Handles 300+ page annual reports without blocking the UI utilizing FastAPI background tasks and polling.
-*   **Security-Hardened Vector Store:** Path containment and safe deserialization safeguards protect FAISS ingestion from malicious pickle injection.
+*   **Security-Hardened Vector Store:** Path containment and disk-backed persistence protect Chroma ingestion from unsafe path traversal and keep large indexes stable across restarts.
 *   **Dynamic Embedding Compatibility:** Automatically scales vector dimensions to allow seamless swapping of embedding models.
 
 ---
@@ -72,7 +73,7 @@ FinDoc processes data sequentially through a cyclic agent graph:
 ```mermaid
 graph TD
     User[User Uploads PDF] --> Ingest[Ingestion Engine]
-    Ingest -->|Chunking & Embedding| VectorDB[(FAISS Vector Store)]
+    Ingest -->|Chunking & Embedding| VectorDB[(Chroma Vector Store)]
     
     User -->|Query| Graph[LangGraph Controller]
     
@@ -135,7 +136,7 @@ streamlit run frontend/app.py
 ├── frontend/           # Streamlit UI dashboard
 ├── graph/              # Langchain State definitions and Nodes
 ├── ingestion/          # PDF Chunking, RRF Loading, Embeddings
-└── vectorstore/        # Hardened FAISS Local indexes
+└── vectorstore/        # Hardened Chroma local indexes
 ```
 
 ---
@@ -143,7 +144,7 @@ streamlit run frontend/app.py
 ## 🛠️ Technology Stack
 
 -   **LLM Orchestration**: [LangGraph](https://langchain-ai.github.io/langgraph/)
--   **Vector Database**: [FAISS](https://github.com/facebookresearch/faiss) (In-Memory)
+-   **Vector Database**: [ChromaDB](https://www.trychroma.com/) (Disk-Backed)
 -   **Backend Framework**: [FastAPI](https://fastapi.tiangolo.com/)
 -   **Frontend**: [Streamlit](https://streamlit.io/)
 -   **Parsing**: PDFPlumber & RecursiveCharacterSplitter
@@ -152,10 +153,10 @@ streamlit run frontend/app.py
 ---
 
 ## 🔮 Future Improvements Roadmap
-- [ ] Multi-user vector database isolation (Session-based FAISS)
+- [ ] Multi-user vector database isolation (Session-based Chroma namespaces)
 - [ ] Migrate `print()` statements to structured Python `logging`
 - [ ] Complete Dockerized deployment with isolated DB container
-- [ ] Support Streaming chunked LLM responses to frontend
+- [x] Support streaming chunked LLM responses to frontend
 
 ---
 

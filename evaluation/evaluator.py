@@ -17,7 +17,7 @@ from datetime import datetime
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
 from app.api.core.config import VECTORSTORE_PATH
-from langchain_community.vectorstores import FAISS
+from langchain_community.vectorstores import Chroma
 from ingestion.embeddings import get_embedding_model
 from graph.graph import build_graph
 from evaluation.metrics import calculate_latency, check_keyword_presence
@@ -48,7 +48,7 @@ def run_evaluation():
     embedder = get_embedding_model()
     try:
         trusted_path = os.path.abspath(VECTORSTORE_PATH)
-        vectorstore = FAISS.load_local(trusted_path, embedder, allow_dangerous_deserialization=True)
+        vectorstore = Chroma(persist_directory=trusted_path, embedding_function=embedder)
         app = build_graph(vectorstore)
     except Exception as e:
         print(f"❌ Failed to load vector store: {e}")

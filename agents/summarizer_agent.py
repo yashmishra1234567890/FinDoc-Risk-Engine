@@ -1,24 +1,17 @@
 import os
-from openai import OpenAI
+from openrouter import OpenRouter
 from graph.state import GraphState
 
 def get_client():
-    return OpenAI(
-        base_url="https://openrouter.ai/api/v1",
-        api_key=os.getenv("OPENROUTER_API_KEY"),
-    )
+    return OpenRouter(api_key=os.getenv("OPENROUTER_API_KEY", ""))
 
-def summarize_report(user_query, analysis_result, compliance_result, retrieved_chunks):
-    client = get_client()
-    
-    # 1. Format Regex Metrics
+
+def build_summary_prompt(user_query, analysis_result, compliance_result, retrieved_chunks):
     metrics_str = "\n".join([f"{k}: {v}" for k, v in analysis_result.get("extracted_metrics", {}).items() if v is not None])
-    
-    # 2. Format Retrieved Context (Raw Text) - Limit to first 5 most relevant to fit context window
     context_text = "\n\n---\n\n".join([chunk["content"] for chunk in retrieved_chunks[:6]])
 
-    prompt = f"""
-You are a highly intelligent financial analyst. You have access to extracted metrics AND raw text segments from a document.
+    return f"""
+You are a highly intelligent financial analyst. You have access to extracted metrics, source evidence, and validation notes.
 
 User's Question: "{user_query}"
 
@@ -35,25 +28,30 @@ User's Question: "{user_query}"
 --------------------------------
 
 INSTRUCTIONS:
-1. **Primary Goal**: Answer the user's question accurately using EITHER the extracted metrics OR the "Raw Document Context".
-   - If the user asks for "Company Name", "Sector", or other metadata, find it in the Context.
-   - If the user asks for "Profit", "Revenue", use the Metrics first, but verify with the Context.
-
-2. **If Data is Missing**:
-   - If you cannot find the answer in the Context or Metrics, simply state: "The information regarding [topic] is not provided in the document."
-   - Do NOT make up numbers.
-
-3. **Format**:
-   - Be direct. "The company name is [Name]." or "The revenue is [Amount]."
-   - If asking for "Analysis" or "Summary", synthesize the Risk Analysis and Context.
+1. Answer accurately using the extracted metrics and context.
+2. If data is missing, say so plainly.
+3. Be direct and concise.
 
 Answer:
 """
 
-    response = client.chat.completions.create(
-        model="mistralai/mistral-7b-instruct-v0.1",
-        messages=[{"role": "user", "content": prompt}],
-        temperature=0.2
+def summarize_report(user_query, analysis_result, compliance_result, retrieved_chunks):
+    client = get_client()
+    prompt = build_summary_prompt(user_query, analysis_result, compliance_result, retrieved_chunks)
+
+    response = client.chat.send(
+        model="mistralai/ministral-8b-2512",
+        messages=[{"role": "user", "content": prompt}]
     )
 
     return response.choices[0].message.content
+
+
+def summarize_report_stream(user_query, analysis_result, compliance_result, retrieved_chunks):
+    client = get_client()
+    prompt = build_summary_prompt(user_query, analysis_result, compliance_result, retrieved_chunks)
+    response = client.chat.send(
+        model="mistralai/ministral-8b-2512",
+        messages=[{"role": "user", "content": prompt}]
+    )
+    yield response.choices[0].message.content

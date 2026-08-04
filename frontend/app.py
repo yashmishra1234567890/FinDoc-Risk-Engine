@@ -45,6 +45,24 @@ if 'analysis_result' not in st.session_state:
 if 'chat_history' not in st.session_state:
     st.session_state.chat_history = []
 
+
+def stream_query(question: str):
+    payload = {"question": question, "stream": True}
+    response = requests.post(f"{API_BASE_URL}/query", json=payload, stream=True, timeout=120)
+    response.raise_for_status()
+
+    answer_parts = []
+    for chunk in response.iter_content(chunk_size=32, decode_unicode=True):
+        if chunk:
+            answer_parts.append(chunk)
+            yield "".join(answer_parts)
+
+
+def query_once(question: str):
+    response = requests.post(f"{API_BASE_URL}/query", json={"question": question}, timeout=120)
+    response.raise_for_status()
+    return response.json()
+
 # --- Sidebar ---
 with st.sidebar:
     st.markdown("## 🏦 <span style='color: #1E88E5'>**FinDoc AI**</span>", unsafe_allow_html=True)
@@ -220,14 +238,8 @@ with tab_dashboard:
     if 'current_query' in st.session_state:
         with st.spinner("🤖 AI Agents working: Decomposing... Retrieving... Calculating..."):
             try:
-                payload = {"question": st.session_state.current_query}
-                # Increased timeout to 120s to allow for deep RAG analysis
-                response = requests.post(f"{API_BASE_URL}/query", json=payload, timeout=120)
-                if response.status_code == 200:
-                    st.session_state.analysis_result = response.json()
-                    del st.session_state.current_query # Clear trigger
-                else:
-                    st.error(f"Analysis Failed: {response.text}")
+                st.session_state.analysis_result = query_once(st.session_state.current_query)
+                del st.session_state.current_query # Clear trigger
             except requests.Timeout:
                 st.error("⚠️ logic timeout: The file is complex and the AI needed more time. Please try asking a simpler question.")
             except Exception as e:
@@ -269,10 +281,21 @@ with tab_dashboard:
             if conf < 0.5:
                 st.caption("⚠️ Low confidence: Data might be missing.")
 
+        compliance = res.get("compliance", {})
+        if compliance:
+            st.markdown("#### 🛡️ Validation Signals")
+            st.caption(
+                f"Temperature risk: {compliance.get('temperature_risk', 0):.2f} | "
+                f"Market context: {compliance.get('market_context', {})}"
+            )
+            st.write(" • ".join(compliance.get("rule_engine_flags", [])[:4]))
+
         # 3. Sources
         with st.expander("📄 View Source Evidence"):
             for s in res.get("sources", []):
                 st.markdown(f"**Page {s['page_no']}**: {s['snippet']}")
+                if s.get("image_base64"):
+                    st.image(s["image_base64"], caption=f"Page {s['page_no']} Highlighted")
 
 
 # ================= CHAT TAB =================
@@ -299,24 +322,36 @@ with tab_chat:
         with st.chat_message("assistant"):
             with st.spinner("Thinking..."):
                 try:
-                    payload = {"question": user_input}
-                    resp = requests.post(f"{API_BASE_URL}/query", json=payload).json()
-                    
-                    answer_text = resp.get("answer", "No answer found.")
-                    st.write(answer_text)
+                    resp = {}
+                    placeholder = st.empty()
+                    answer_text = ""
+                    for partial in stream_query(user_input):
+                        answer_text = partial
+                        placeholder.write(answer_text)
+
+                    if not answer_text:
+                        resp = query_once(user_input)
+                        answer_text = resp.get("answer", "No answer found.")
+                        placeholder.write(answer_text)
+                        sources = resp.get("sources", [])
+                    else:
+                        sources = []
                     
                     # Store logic
                     st.session_state.chat_history.append({
                         "role": "assistant",
                         "content": answer_text,
-                        "sources": resp.get("sources", [])
+                        "sources": sources,
+                        "compliance": resp.get("compliance", {}),
                     })
                     
                     # Show sources immediately for this turn
-                    if resp.get("sources"):
+                    if sources:
                         with st.expander("Sources"):
-                             for s in resp["sources"]:
+                             for s in sources:
                                 st.markdown(f"- **Pg {s['page_no']}**: {s['snippet']}")
+                                if s.get("image_base64"):
+                                    st.image(s["image_base64"], caption=f"Page {s['page_no']} Highlighted")
                                 
                 except Exception as e:
                     st.error("Error connecting to agent.")

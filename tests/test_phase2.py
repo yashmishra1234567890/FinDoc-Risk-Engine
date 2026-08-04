@@ -7,22 +7,21 @@ sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 from graph.state import GraphState
 from graph.graph import build_graph
 from ingestion.embeddings import get_embedding_model
-from langchain_community.vectorstores import FAISS
+from langchain_community.vectorstores import Chroma
 
 # Ensure vectorstore exists or mock it
 # For now, we assume it needs to be loaded, but if it doesn't exist we might need to create it.
 import os
-if not os.path.exists("vectorstore/faiss_index"):
+if not os.path.exists("vectorstore/index"):
     print("Vectorstore not found. Please run ingestion first.")
     exit(1)
 
 embedder = get_embedding_model()
 try:
-    trusted_path = os.path.abspath("vectorstore/faiss_index")
-    vectorstore = FAISS.load_local(
-        trusted_path, 
-        embedder, 
-        allow_dangerous_deserialization=True
+    trusted_path = os.path.abspath("vectorstore/index")
+    vectorstore = Chroma(
+        persist_directory=trusted_path, 
+        embedding_function=embedder
     )
 except Exception as e:
     print(f"Error loading vectorstore: {e}")

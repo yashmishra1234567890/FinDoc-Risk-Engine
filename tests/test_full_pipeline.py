@@ -20,7 +20,7 @@ else:
 # Add project root to sys.path
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
-from langchain_community.vectorstores import FAISS
+from langchain_community.vectorstores import Chroma
 from app.api.core.config import VECTORSTORE_PATH
 from ingestion.embeddings import get_embedding_model
 from graph.graph import build_graph
@@ -33,7 +33,7 @@ def run_pipeline():
     try:
         embedder = get_embedding_model()
         trusted_path = os.path.abspath(VECTORSTORE_PATH)
-        vectorstore = FAISS.load_local(trusted_path, embedder, allow_dangerous_deserialization=True)
+        vectorstore = Chroma(persist_directory=trusted_path, embedding_function=embedder)
         print("Vector store loaded successfully.")
     except Exception as e:
         print(f"Error loading vector store: {e}")

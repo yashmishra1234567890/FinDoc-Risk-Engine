@@ -7,7 +7,7 @@ sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 from ingestion.loader import load_pdf
 from ingestion.chunking import chunk_financial_pages
 from ingestion.embeddings import get_embedding_model
-from ingestion.indexer import build_faiss_index
+from ingestion.indexer import build_index
 from retrieval.retriever import retrieve_chunks
 
 
@@ -22,7 +22,7 @@ def run_phase1_test():
     print(f"Chunks created: {len(chunks)}")
 
     embedder = get_embedding_model()
-    vectorstore = build_faiss_index(chunks, embedder)
+    vectorstore = build_index(chunks, embedder)
 
     query = "total debt and liabilities"
     results = retrieve_chunks(vectorstore, query)
@@ -34,3 +34,4 @@ def run_phase1_test():
 
 if __name__ == "__main__":
     run_phase1_test()
+#D:/Findoc_agentic_ai/venv/Scripts/python.exe tests/test_phase1.py for testing

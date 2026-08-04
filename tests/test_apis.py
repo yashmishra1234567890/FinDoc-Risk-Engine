@@ -38,7 +38,7 @@ def check_query():
     payload = {"question": "What is the total debt?"}
     try:
         # We expect a mock response or a real one depending on loaded state
-        # Since we just started server fresh, FAISS might be empty or loaded from disk.
+        # Since we just started server fresh, the vector store may be empty or loaded from disk.
         # This test ensures the endpoint accepts the request.
         r = requests.post(f"{BASE_URL}/query", json=payload)
         if r.status_code == 200:

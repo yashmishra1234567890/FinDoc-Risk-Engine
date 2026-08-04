@@ -8,7 +8,7 @@ from ingestion.loader import load_pdf
 from ingestion.chunking import chunk_financial_pages
 from ingestion.indexer import create_documents_from_chunks
 from app.api.core.config import DATA_DIR, VECTORSTORE_PATH
-from app.api.core.store import vectorstore, reset_vectorstore
+from app.api.core.store import get_vectorstore, reset_vectorstore
 
 router = APIRouter(tags=["Ingestion"])
 logger = logging.getLogger(__name__)
@@ -27,7 +27,7 @@ def process_file_background(file_path: str, task_id: str):
         logger.info(f"Starting background processing for task {task_id}: {file_path}")
         
         # Optimization: Reuse index if it's the exact same file
-        if last_processed_file == file_path and os.path.exists(os.path.join(VECTORSTORE_PATH, "index.faiss")):
+        if last_processed_file == file_path and os.path.exists(VECTORSTORE_PATH):
             logger.info("File already indexed. Bypassing re-embedding to save time.")
             upload_status[task_id] = {"status": "completed", "message": "Reused existing vector index."}
             return
@@ -54,8 +54,8 @@ def process_file_background(file_path: str, task_id: str):
              _process_batch(batch_pages)
 
         # 4. Save to Disk (Once at the end)
-        os.makedirs("vectorstore", exist_ok=True)
-        vectorstore.save_local(VECTORSTORE_PATH)
+        os.makedirs(VECTORSTORE_PATH, exist_ok=True)
+        # Chroma DB persists automatically to persist_directory
         logger.info("Vectorstore saved successfully")
         
         # Update Cache Tracker
@@ -71,7 +71,7 @@ def process_file_background(file_path: str, task_id: str):
 def _process_batch(pages):
     chunks = chunk_financial_pages(pages)
     documents = create_documents_from_chunks(chunks)
-    vectorstore.add_documents(documents)
+    get_vectorstore().add_documents(documents)
     logger.info(f"Processed batch of {len(pages)} pages.")
 
 

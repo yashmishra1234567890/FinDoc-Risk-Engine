@@ -33,7 +33,7 @@ def analysis_node(state):
 
 def validate_node(state):
     print("--- VALIDATE ---")
-    compliance = validate_analysis(state.analysis_result)
+    compliance = validate_analysis(state.analysis_result, user_query=state.user_query)
     return {"compliance_result": compliance}
 
 def summarize_node(state):

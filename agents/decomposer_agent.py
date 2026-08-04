@@ -1,14 +1,11 @@
 import os
 import logging
-from openai import OpenAI
+from openrouter import OpenRouter
 
 logger = logging.getLogger(__name__)
 
 def get_client():
-    return OpenAI(
-        base_url="https://openrouter.ai/api/v1",
-        api_key=os.getenv("OPENROUTER_API_KEY"),
-    )
+    return OpenRouter(api_key=os.getenv("OPENROUTER_API_KEY", ""))
 
 def decompose_query(user_query: str):
     client = get_client()
@@ -25,10 +22,9 @@ Return as bullet points.
 """
 
     try:
-        response = client.chat.completions.create(
-            model="mistralai/mistral-7b-instruct-v0.1",
-            messages=[{"role": "user", "content": prompt}],
-            temperature=0.2
+        response = client.chat.send(
+            model="mistralai/ministral-8b-2512",
+            messages=[{"role": "user", "content": prompt}]
         )
         
         content = response.choices[0].message.content
