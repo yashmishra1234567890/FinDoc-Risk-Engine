@@ -26,3 +26,10 @@
 | What is the total debt and equity for FY 2023? | 16.68s | 0.67 | 0.52 | Low risk: debt-to-equity is 1.00, Interest coverage data missing, Market context: VIX=16.54, 10Y yield=4.63%, Temperature-aware risk moderately elevated., SEC cross-check unavailable for this document. |
 | Calculate the interest coverage ratio. | 14.61s | 1.0 | 0.78 | Low risk: debt-to-equity is 1.00, Interest coverage data missing, Market context: VIX=16.54, 10Y yield=4.63%, Temperature-aware risk moderately elevated., SEC cross-check loaded for VISA INC.. |
 
+# 📊 Evaluation Report - 2026-08-11 15:07:12
+
+| Question | Latency (s) | Keywords Hit | Confidence | Validator Flag |
+|---|---|---|---|---|
+| What is the total debt and equity for FY 2023? | 68.61s | 0.67 | 0.52 | Low risk: debt-to-equity is 1.00, Interest coverage data missing, Market context: VIX=15.50, 10Y yield=4.70%, Temperature-aware risk moderately elevated., SEC cross-check unavailable for this document. |
+| Calculate the interest coverage ratio. | 55.36s | 1.0 | 0.78 | Low risk: debt-to-equity is 1.00, Interest coverage data missing, Market context: VIX=15.50, 10Y yield=4.70%, Temperature-aware risk moderately elevated., SEC cross-check loaded for VISA INC.. |
+

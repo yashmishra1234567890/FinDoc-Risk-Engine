@@ -1,9 +1,9 @@
 import os
 import sys
-from openrouter import OpenRouter
 from langchain_community.vectorstores import Chroma
 from ingestion.embeddings import get_embedding_model
 from app.api.core.config import VECTORSTORE_PATH
+from utils.llm import chat_completion, get_model
 from dotenv import load_dotenv
 
 # Add project root to path if running directly
@@ -29,7 +29,6 @@ class BaselineRAG:
             persist_directory=trusted_path, 
             embedding_function=self.embeddings
         )
-        self.client = OpenRouter(api_key=os.getenv("OPENROUTER_API_KEY", ""))
     
     def run(self, query: str) -> str:
         # 1. Retrieve Context
@@ -47,11 +46,10 @@ Context:
 Question: {query}
 """
         
-        response = self.client.chat.send(
-            model="mistralai/ministral-8b-2512",
-            messages=[{"role": "user", "content": prompt}]
+        return chat_completion(
+            messages=[{"role": "user", "content": prompt}],
+            model=get_model(),
         )
-        return response.choices[0].message.content
 
 if __name__ == "__main__":
     # Simple test

@@ -3,18 +3,25 @@ import logging
 
 from app.api.schemas.request import QueryRequest
 from app.api.schemas.response import QueryResponse, Source
-from app.api.core.store import vectorstore
+from app.api.core.store import get_vectorstore
 from graph.graph import build_graph
 
 router = APIRouter(tags=["Query"])
 logger = logging.getLogger(__name__)
 
-graph_app = build_graph(vectorstore)
+
+def get_graph_app():
+    """Builds or rebuilds the LangGraph with the current vectorstore.
+    Important: Rebuilds each call so that uploads (which reset the vectorstore)
+    take effect for subsequent queries."""
+    return build_graph(get_vectorstore())
 
 
 @router.post("/query", response_model=QueryResponse)
 def query_financials(req: QueryRequest):
     try:
+        vectorstore = get_vectorstore()
+
         # Check if we have data
         doc_count = 0
         try:
@@ -34,7 +41,7 @@ def query_financials(req: QueryRequest):
             "user_query": req.question
         }
 
-        result = graph_app.invoke(state)
+        result = get_graph_app().invoke(state)
 
         # Deduplicate sources based on page number
         unique_pages = set()

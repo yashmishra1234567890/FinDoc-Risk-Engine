@@ -1,14 +1,10 @@
-import os
 import logging
-from openrouter import OpenRouter
+from utils.llm import chat_completion, get_model
 
 logger = logging.getLogger(__name__)
 
-def get_client():
-    return OpenRouter(api_key=os.getenv("OPENROUTER_API_KEY", ""))
 
 def decompose_query(user_query: str):
-    client = get_client()
     prompt = f"""
 You are a financial analyst.
 
@@ -22,18 +18,16 @@ Return as bullet points.
 """
 
     try:
-        response = client.chat.send(
-            model="mistralai/ministral-8b-2512",
-            messages=[{"role": "user", "content": prompt}]
+        content = chat_completion(
+            messages=[{"role": "user", "content": prompt}],
+            model=get_model(),
         )
-        
-        content = response.choices[0].message.content
         sub_questions = [line.strip("- ").strip() for line in content.split("\n") if line.strip().startswith("-")]
 
         # Fallback: If no bullet points found, or empty, use original query
         if not sub_questions:
-             return [user_query]
-             
+            return [user_query]
+
         return sub_questions
 
     except Exception as e:

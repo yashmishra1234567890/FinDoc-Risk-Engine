@@ -29,9 +29,22 @@ data/samples/*
 vectorstore/index/*
 !vectorstore/index/.gitkeep
 
+# Table-aware retrieval artifacts (Phase 3)
+vectorstore/tables/*
+!vectorstore/tables/.gitkeep
+vectorstore/tables_index/*
+!vectorstore/tables_index/.gitkeep
+
 # Generated Reports
 reports/*
 !reports/.gitkeep
 
 # Logs
 *.log
+
+# Local financial documents
+data/financial_docs/*.pdf
+
+# Generated vector indexes
+vectorstore/faiss_index/*.faiss
+vectorstore/faiss_index/*.pkl

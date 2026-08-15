@@ -1,9 +1,4 @@
-import os
-from openrouter import OpenRouter
-from graph.state import GraphState
-
-def get_client():
-    return OpenRouter(api_key=os.getenv("OPENROUTER_API_KEY", ""))
+from utils.llm import chat_completion, chat_completion_stream, get_model
 
 
 def build_summary_prompt(user_query, analysis_result, compliance_result, retrieved_chunks):
@@ -35,23 +30,18 @@ INSTRUCTIONS:
 Answer:
 """
 
+
 def summarize_report(user_query, analysis_result, compliance_result, retrieved_chunks):
-    client = get_client()
     prompt = build_summary_prompt(user_query, analysis_result, compliance_result, retrieved_chunks)
-
-    response = client.chat.send(
-        model="mistralai/ministral-8b-2512",
-        messages=[{"role": "user", "content": prompt}]
+    return chat_completion(
+        messages=[{"role": "user", "content": prompt}],
+        model=get_model(),
     )
-
-    return response.choices[0].message.content
 
 
 def summarize_report_stream(user_query, analysis_result, compliance_result, retrieved_chunks):
-    client = get_client()
     prompt = build_summary_prompt(user_query, analysis_result, compliance_result, retrieved_chunks)
-    response = client.chat.send(
-        model="mistralai/ministral-8b-2512",
-        messages=[{"role": "user", "content": prompt}]
+    yield from chat_completion_stream(
+        messages=[{"role": "user", "content": prompt}],
+        model=get_model(),
     )
-    yield response.choices[0].message.content
