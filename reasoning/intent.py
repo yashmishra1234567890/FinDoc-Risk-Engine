@@ -105,16 +105,9 @@ def detect_intent(question: str) -> IntentResult:
             reasons=[f"strong calculation verb matched ({matched or 'verb'})"],
         )
 
-    # 2. Pure factual lookup of a single reported figure -> no calculation
-    if _NO_CALC_NUMBERS.match(q):
-        return IntentResult(
-            requires_calculation=False,
-            confidence=0.9,
-            metric_hints=metric_hints(q),
-            reasons=["factual single-figure lookup"],
-        )
-
-    # 3. Explicit calculation-type pattern
+    # 2. Explicit calculation-type pattern (checked before the factual
+    #    fallback so "what was the revenue difference between..." is treated
+    #    as a calculation, not a plain lookup).
     calc_type, conf, matched = _match_pattern(q)
     if calc_type:
         return IntentResult(
@@ -125,6 +118,15 @@ def detect_intent(question: str) -> IntentResult:
             multi_step=bool(_MULTI_STEP_MARKERS.search(q)),
             metric_hints=metric_hints(q),
             reasons=[f"calculation pattern matched: {matched}"],
+        )
+
+    # 3. Pure factual lookup of a single reported figure -> no calculation
+    if _NO_CALC_NUMBERS.match(q):
+        return IntentResult(
+            requires_calculation=False,
+            confidence=0.9,
+            metric_hints=metric_hints(q),
+            reasons=["factual single-figure lookup"],
         )
 
     # 4. Factual wording with no growth/change/% signal

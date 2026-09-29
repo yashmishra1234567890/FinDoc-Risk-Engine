@@ -1,4 +1,7 @@
+import os
+
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 import logging
 from dotenv import load_dotenv
 
@@ -21,6 +24,22 @@ app = FastAPI(
     version="1.0"
 )
 
+cors_origins = [
+    origin.strip()
+    for origin in os.getenv(
+        "CORS_ORIGINS",
+        "https://yashmishra1234567890-findoc-risk-engine-frontendapp-0k0ooh.streamlit.app",
+    ).split(",")
+    if origin.strip()
+]
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=cors_origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
 @app.get("/")
 def read_root():
     return {"message": "FinDoc AI API is running. Check /docs for API documentation."}
@@ -30,8 +49,10 @@ app.include_router(upload_router)
 app.include_router(query_router)
 
 if __name__ == "__main__":
-    # How to run locally:
-    # python -m app.main
     import uvicorn
-    # Use 8001 to avoid conflicts
-    uvicorn.run("app.main:app", host="127.0.0.1", port=8001, reload=False)
+    uvicorn.run(
+        "app.main:app",
+        host=os.getenv("HOST", "0.0.0.0"),
+        port=int(os.getenv("PORT", "8000")),
+        reload=False,
+    )

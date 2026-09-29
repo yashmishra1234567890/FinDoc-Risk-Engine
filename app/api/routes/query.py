@@ -5,6 +5,7 @@ from app.api.schemas.request import QueryRequest
 from app.api.schemas.response import QueryResponse, Source
 from app.api.core.store import get_vectorstore
 from graph.graph import build_graph
+from retrieval.citations import make_citation
 
 router = APIRouter(tags=["Query"])
 logger = logging.getLogger(__name__)
@@ -69,7 +70,16 @@ def query_financials(req: QueryRequest):
 
                     if p_no not in unique_pages:
                         unique_pages.add(p_no)
-                        sources.append(Source(page_no=p_no, snippet=snippet))
+                        sources.append(
+                            Source(
+                                page_no=p_no,
+                                snippet=snippet,
+                                source_id=chunk.get("source_id"),
+                                table_id=chunk.get("table_id"),
+                                row_idx=chunk.get("row_idx"),
+                                is_table=bool(chunk.get("is_table", chunk.get("has_table", False))),
+                            )
+                        )
 
                 except Exception as e:
                     logger.warning(f"Error processing source {i}: {str(e)}")
@@ -88,6 +98,10 @@ def query_financials(req: QueryRequest):
         market_context = compliance.get("market_context", {}) or {}
         federated_sources = compliance.get("federated_sources", {}) or {}
         temperature_risk = compliance.get("temperature_risk", 0.0) or 0.0
+        citations = [make_citation(chunk) for chunk in chunks]
+        numerical = result.get("numerical_result") or {}
+        verification = result.get("verification") or numerical.get("verification") or None
+        risk_summary = compliance.get("rule_engine_flags", []) or []
 
         return QueryResponse(
             answer=result.get("final_answer", "No answer generated."),
@@ -98,7 +112,11 @@ def query_financials(req: QueryRequest):
             compliance=compliance,
             market_context=market_context,
             federated_sources=federated_sources,
-            temperature_risk=temperature_risk
+            temperature_risk=temperature_risk,
+            citations=citations,
+            calculation=numerical if numerical.get("requires_calculation") else None,
+            verification=verification,
+            risk_summary=risk_summary,
         )
     except Exception as e:
         logger.error(f"Error processing query: {str(e)}")

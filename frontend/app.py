@@ -441,6 +441,21 @@ with tab_dashboard:
             if conf < 0.5:
                 st.caption("⚠️ Low confidence: Data might be missing.")
 
+        calculation = res.get("calculation")
+        if calculation:
+            st.markdown("#### 🧮 Calculation")
+            st.code(calculation.get("formula", ""), language="text")
+            st.write(f"Result: {calculation.get('result')}")
+            if calculation.get("operands"):
+                st.caption(f"Operands: {calculation['operands']}")
+
+        verification = res.get("verification")
+        if verification:
+            st.markdown("#### ✅ Verification")
+            st.write(verification.get("status", "Not available"))
+            if verification.get("reason"):
+                st.caption(verification["reason"])
+
         if compliance:
             st.markdown("#### 🛡️ Validation Signals")
             st.caption(
@@ -449,13 +464,20 @@ with tab_dashboard:
             )
             st.write(" • ".join(compliance.get("rule_engine_flags", [])[:4]))
 
+        risk_summary = res.get("risk_summary", [])
+        if risk_summary:
+            st.markdown("#### ⚠️ Risk Summary")
+            for flag in risk_summary[:6]:
+                st.write(f"- {flag}")
+
         st.markdown("#### 📌 Why this answer")
         st.write(res.get("answer"))
 
         # 3. Sources
         with st.expander("📄 View Source Evidence"):
             for s in res.get("sources", []):
-                st.markdown(f"**Page {s['page_no']}**: {s['snippet']}")
+                table_note = f" | Table {s['table_id']}" if s.get("table_id") else ""
+                st.markdown(f"**Page {s['page_no']}**{table_note}: {s['snippet']}")
                 if s.get("image_base64"):
                     st.image(s["image_base64"], caption=f"Page {s['page_no']} Highlighted")
 

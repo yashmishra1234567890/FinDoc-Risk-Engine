@@ -1,0 +1,24 @@
+{
+  "name": "findoc-v2-real-document-evaluation",
+  "version": 1,
+  "source": "Generated from PDFs in data/financial_docs by evaluation.runner",
+  "supported_categories": [
+    "factual_lookup",
+    "table",
+    "numerical",
+    "multi_step"
+  ],
+  "unsupported_questions": [
+    "What was the company's share price ten years from now?",
+    "Compare this report with a competitor's confidential results.",
+    "What will the company's market valuation be next year?",
+    "What is the CEO's private investment portfolio?",
+    "What did an unrelated company report in the same period?"
+  ],
+  "generation": {
+    "max_table_queries": 20,
+    "max_paragraph_queries": 15,
+    "unsupported_queries": 5,
+    "facts_policy": "Supported records are generated only from indexed local PDF content; unsupported records are explicitly negative cases."
+  }
+}

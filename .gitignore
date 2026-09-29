@@ -38,6 +38,8 @@ vectorstore/tables_index/*
 # Generated Reports
 reports/*
 !reports/.gitkeep
+evaluation/results/*
+!evaluation/results/.gitkeep
 
 # Logs
 *.log
